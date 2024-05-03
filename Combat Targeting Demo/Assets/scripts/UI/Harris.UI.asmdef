@@ -1,7 +1,12 @@
 {
     "name": "Harris.UI",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:5f80488d4b6702e4e848b78100b48655",
+        "GUID:ce556b31a1b753c4ea8b59efc4603465",
+        "GUID:c9dc16a4227bff04b83e1b150bc489e8"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -9,6 +14,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "Select...",
+            "expression": "",
+            "define": ""
+        }
+    ],
     "noEngineReferences": false
 }

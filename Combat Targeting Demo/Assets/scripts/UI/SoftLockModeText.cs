@@ -7,12 +7,13 @@ namespace Harris.UI
 	using UnityEngine;
 	using UnityEngine.UI;
 	using TMPro;
+	using Harris.UIInterface;
 
 	internal class SoftLockModeText : UIText
 	{
 		public override void Awake()
 		{
-			SoftLock._onSoftLockModeChanged += handleSoftLockModeChanged;
+			CombatInterface._onSoftLockModeChanged += handleSoftLockModeChanged;
 		}
 
 		private void handleSoftLockModeChanged(SoftLockMode newSoftLockMode)

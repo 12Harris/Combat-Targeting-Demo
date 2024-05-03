@@ -7,10 +7,11 @@ namespace Harris.UI
 	using UnityEngine;
 	using UnityEngine.UI;
 	using System;
+	using Harris.NPC;
 
 	internal class EnemyStrengthSlider : UISlider
 	{
-        [SerializeField] private SensorTarget npc;
+        [SerializeField] private Enemy npc;
 		//[SerializeField] private EnemyStrengthText enemyStrengthText;
 
 		public event Action _onEnemyStrengthChanged;

@@ -1,9 +1,7 @@
 {
-    "name": "Harris.Player",
+    "name": "Harris.NPC",
     "rootNamespace": "",
-    "references": [
-        "GUID:21e77774b254e9845865036f97ee3581"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

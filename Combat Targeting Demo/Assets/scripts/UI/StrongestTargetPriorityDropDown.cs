@@ -7,10 +7,10 @@ namespace Harris.UI
 	using UnityEngine;
 	using UnityEngine.UI;
 	using System;
+	using Harris.UIInterface;
 
 	internal class StrongestTargetPriorityDropDown : UIDropDown
 	{
-        public static event Action<int> _onPriorityChanged;
         private int currentOptionValue;
 
         [SerializeField]
@@ -20,7 +20,10 @@ namespace Harris.UI
 		{
 			base.Update();
 
-            var oldPriority = ChooseTarget.Instance.StrongestTargetPriority;
+			//problem: DIRECT DEPENDENCY
+            //var oldPriority = ChooseTarget.Instance.StrongestTargetPriority;
+			var oldPriority = CombatInterface.Instance.requestValue("StrongestTargetPriority");
+
             int.TryParse(Dropdown.options[CurrentValue].text, out currentOptionValue);
             //ChooseTarget.Instance.StrongestTargetPriority = CurrentValue;
             Debug.Log("current strongest target priority value = " + currentOptionValue);
@@ -34,7 +37,10 @@ namespace Harris.UI
                     nearestTargetPriorityDropDown.Dropdown.value = 0;
 
                 Debug.Log("strongest target priority value = " + currentOptionValue);
-				_onPriorityChanged.Invoke(currentOptionValue);
+
+				//to softlock
+				CombatInterface.Instance.send("StrongestTargetPriorityChanged", currentOptionValue);
+
 				oldPriority = currentOptionValue;
 			}
 		}

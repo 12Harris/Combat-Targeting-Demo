@@ -12,8 +12,8 @@ namespace Harris.UI
 	{
 		public override void Awake()
 		{
-			StrafeState._onEnter += handleStrafeStateEntered;
-			StrafeState._onExit += handleStrafeStateLeft;
+			//StrafeState._onEnter += handleStrafeStateEntered;
+			//StrafeState._onExit += handleStrafeStateLeft;
 		}
 
 		private void handleStrafeStateEntered()

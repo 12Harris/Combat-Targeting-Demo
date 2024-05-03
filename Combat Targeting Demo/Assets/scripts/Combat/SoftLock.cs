@@ -9,12 +9,15 @@ namespace Harris.Combat
 	using System.Collections.Generic;
 	using UnityEngine.UI;
 	using System;
+	using Harris.Interactable;
+	using Harris.Player;
+	using Harris.UIInterface;
 
-	internal enum SoftLockMode
+	/*public enum SoftLockMode
 	{
 		PRIORITY,
 		MOUSE,
-	}
+	}*/
 
 	internal class SoftLock : MonoBehaviour
 	{
@@ -32,8 +35,6 @@ namespace Harris.Combat
 
 		public static event Action<Transform> _onSoftLockTargetChanged;
 		public static event Action _onTargetLost;
-		public static event Action<SoftLockMode> _onSoftLockModeChanged;
-
 		private SoftLockMode mode = SoftLockMode.PRIORITY;
 
 		public SoftLockMode Mode => mode;
@@ -48,7 +49,7 @@ namespace Harris.Combat
 			// init references
 			GameEntity.onMouseEnteredEntityBoundaries += handleMouseEnteredEntityBoundaries;
 			GameEntity.onMouseLeftEntityBoundaries += handleMouseLeftEntityBoundaries;
-			PlayerThrowingObjectAnimationState._onAnimationStopped += handleThrowAnimationStopped;
+
 			LockOnTarget. _onSoftLockDisabled += handleSoftLockDisabled;
 			Instance = this;
 			//mode = SoftLockMode.STRAFE;
@@ -73,7 +74,7 @@ namespace Harris.Combat
 		{
 			var oldSoftLockTarget = softlockTarget;
 
-			SensorTarget target = entity.transform.parent.GetComponentInChildren<SensorTarget>();
+			Transform target = entity.transform.parent.GetComponentInChildren<Transform>();
 
 			var directionToTargetXZ = target.transform.position - transform.position;
 			directionToTargetXZ.y = 0;
@@ -82,7 +83,7 @@ namespace Harris.Combat
 			var angle1 = Vector3.Angle(transform.forward, directionToTargetXZ);
 
 			//angle between spine and forward must also be < 90
-			var angle2 = Vector3.Angle(transform.forward, playerSpineBone.forward);
+			var angle2 = 0;
 
 			GameObject highLight;
 
@@ -104,7 +105,7 @@ namespace Harris.Combat
 				//highLight.transform.Find("Image").gameObject.GetComponent<Image>().enabled = false;
 			}
 
-			if(enableSoftLock && mode == SoftLockMode.MOUSE && GetComponent<Player>().GetSensor<Sight>().containsTarget(target))
+			if(enableSoftLock && mode == SoftLockMode.MOUSE && GetComponent<PlayerController>().GetSensor<Sight>().containsTarget(target))
 			{
 				softlockTarget = target.transform;
 				//highLight = softlockTarget.parent.Find("Highlight").gameObject;
@@ -144,143 +145,6 @@ namespace Harris.Combat
 			enableSoftLock = true;
 		}
 
-		/*private void calculateSoftLockTarget()
-		{
-			var potentialTargets = getLeftAndRightTarget();
-
-			var oldSoftLockTarget = softlockTarget;
-
-			if(potentialTargets.Count > 0)				
-			{
-				Debug.Log("There are: " + potentialTargets.Count + " potential targets");
-								
-				softlockTarget = potentialTargets[0].transform;
-
-				if(potentialTargets.Count > 1)	
-				{
-					softlockTarget = Vector3.Distance(potentialTargets[0].transform.position, transform.position) < 
-						Vector3.Distance(potentialTargets[1].transform.position, transform.position) ? potentialTargets[0].transform : potentialTargets[1].transform;
-				}
-
-				//if(oldSoftLockTarget != null && softlockTarget != oldSoftLockTarget)
-				if(softlockTarget != oldSoftLockTarget)
-				{
-					_onSoftLockTargetChanged?.Invoke(softlockTarget);
-					oldSoftLockTarget.parent.Find("Highlight").gameObject.transform.Find("Image").gameObject.GetComponent<Image>().enabled = false;
-				}
-
-				GameObject highLight = softlockTarget.parent.Find("Highlight").gameObject;
-					highLight.transform.Find("Image").gameObject.GetComponent<Image>().enabled = true;
-			}
-			else
-			{
-				Debug.Log("NO POTENTIAL TARGETS");
-				if(softlockTarget)
-					softlockTarget.parent.Find("Highlight").gameObject.transform.Find("Image").gameObject.GetComponent<Image>().enabled = false;
-				softlockTarget = null;
-			}
-			
-		}*/
-
-		//private SensorTarget[] getLeftAndRightTarget()
-		/*private List<SensorTarget> getLeftAndRightTarget()
-		{
-
-			var arr = new List<SensorTarget>();
-
-			var rightTargets = getRightTargets();
-
-			var leftTargets = getLeftTargets();
-
-			SensorTarget leftTarget, rightTarget;
-
-			var dirXZ = transform.forward;
-			dirXZ.y = 0;
-			
-			var minAngle = 360f;
-
-			leftTarget = rightTarget = null;
-
-			//Get left target
-			foreach(SensorTarget target in leftTargets)
-			{
-				Debug.Log("there are: " + leftTargets.Count + " left targets");
-				var directionToTargetXZ = target.transform.position - playerSpineBone.position;
-				directionToTargetXZ.y = 0;
-
-				if(Vector3.Angle(directionToTargetXZ, dirXZ) < minAngle)
-				{
-					leftTarget = target;
-					minAngle = Vector3.Angle(directionToTargetXZ, dirXZ);
-				}
-			}	
-
-			//Get right target
-			foreach(SensorTarget target in rightTargets)
-			{
-				Debug.Log("there are: " + rightTargets.Count + " right targets");
-				var directionToTargetXZ = target.transform.position - playerSpineBone.position;
-				directionToTargetXZ.y = 0;
-
-				if(Vector3.Angle(directionToTargetXZ, dirXZ) < minAngle)
-				{
-					rightTarget = target;
-					minAngle = Vector3.Angle(directionToTargetXZ, dirXZ);
-				}
-			}	
-
-			GameObject highLight;
-
-			if(leftTarget)
-			{
-				arr.Add(leftTarget);
-			}
-
-			if(rightTarget)
-			{
-				arr.Add(rightTarget);
-				//highLight.transform.Find("Image").gameObject.GetComponent<Image>().enabled = true;
-			}
-
-			return arr;
-		}*/
-
-		/*private List<SensorTarget> getLeftTargets()
-		{
-			return getTargets("left");
-		}
-
-		private List<SensorTarget> getRightTargets()
-		{
-			return getTargets("right");
-		}*/
-
-		/*private List<SensorTarget> getTargets(string relative)
-		{
-			var result = new List<SensorTarget>();
-
-			var dirXZ = transform.forward;
-			dirXZ.y = 0;
-
-			int directionToCheck = relative == "left" ? 1 : -1;
-
-			foreach(SensorTarget target in GetComponent<Player>().GetSensor<Sight>().TargetsSensed)
-			{
-				//SensorTarget currentTarget = GetComponent<Player>().GetSensor<Sight>().TargetsSensed[i];
-				var directionToTargetXZ = target.transform.position - playerSpineBone.position;
-
-				//Get the target that is closest to the direction the player is facing
-				LeftRightTest test = new LeftRightTest(dirXZ,directionToTargetXZ,dirXZ, Vector3.up);
-
-				if(test.DirNum == directionToCheck)
-				{
-					result.Add(target);
-				}
-			}
-
-			return result;
-		}*/
-
 		private void Update()
 		{
 			// in small intervals we do soft locking, every frame would be far too expensive
@@ -304,7 +168,10 @@ namespace Harris.Combat
 					{
 						mode = SoftLockMode.PRIORITY;
 					}	
-					_onSoftLockModeChanged?.Invoke(mode);			
+					//_onSoftLockModeChanged?.Invoke(mode);
+
+					CombatInterface.Instance.send("SoftLockModeChanged", mode);	
+						
 				}
 
 				if(mode == SoftLockMode.PRIORITY)

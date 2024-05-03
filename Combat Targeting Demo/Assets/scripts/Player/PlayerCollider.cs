@@ -10,10 +10,10 @@ namespace Harris.Player
     {
 
         private Vector3 bottomPoint;
-        public Vector3 BottomPoint => pottomPoint;
+        public Vector3 BottomPoint => bottomPoint;
 
-        public float Height => collider.height;
-        public float Radius => collider.radius;
+        public float Height => (collider as CapsuleCollider).height;
+        public float Radius => (collider as CapsuleCollider).radius;
 
         [SerializeField]
         private Collider collider;

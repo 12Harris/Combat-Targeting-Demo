@@ -15,6 +15,9 @@ using Unity.Collections;
 namespace Harris.Combat
 {
 	using UnityEngine;
+	using Harris.UIInterface;
+	using Harris.Player;
+	using Harris.NPC;
 
 
 	[AddComponentMenu("Combat/ChooseTarget")]
@@ -24,16 +27,16 @@ namespace Harris.Combat
 
 		public IDictionary<PriorityCondition, int> Priorities => priorities;
 
-		public delegate bool PriorityCondition(SensorTarget target);
+		public delegate bool PriorityCondition(Enemy target);
 
 		private int defaultTargetPriority = 3;
 
 		[SerializeField]
-		private List<SensorTarget> sensorTargets;
+		private List<Enemy> sensorTargets;
 
-		private SensorTarget chosenTarget;
+		private Enemy chosenTarget;
 
-		public SensorTarget ChosenTarget => chosenTarget;
+		public Enemy ChosenTarget => chosenTarget;
 
 		[SerializeField]
 		private int strongestTargetPriority;
@@ -55,46 +58,47 @@ namespace Harris.Combat
 
 		public static ChooseTarget Instance;
 
-		[SerializeField]
-		private Transform playerSpineBone;
 
-		//public static event Action<SensorTarget> _onTargetDetected;
+		//public static event Action<Transform> _onTargetDetected;
 
 		//PRIORITY CONDITIONS
 
 		//should be generic: AddTarget<T>(T target) : where T : NPC
-		public void AddTarget(SensorTarget target)
+		public void AddTarget(Transform target)
 		{
-			//if(!sensorTargets.Contains(target))
-				//sensorTargets.Add(target);
+			//if(!Transform.Contains(target))
+				//Transform.Add(target);
+
+			Enemy e = target.gameObject.GetComponent<Enemy>();
 			
-			if(sensorTargets.Contains(target))
+			if(sensorTargets.Contains(e))
 				return;
 
-			var directionToTargetXZ = target.transform.position - transform.position;
+			var directionToTargetXZ = e.transform.position - transform.position;
 			directionToTargetXZ.y = 0;
 
 			var angle = Vector3.Angle(transform.forward, directionToTargetXZ);
 
 			if(angle < 90f)
 			{
-				sensorTargets.Add(target);
+				sensorTargets.Add(e);
 			}
 		}
 
-		public void RemoveTarget(SensorTarget target)
-		{
-			if(sensorTargets.Contains(target))
-				sensorTargets.Remove(target);
+		public void RemoveTarget(Transform target)
+		{	
+			Enemy e = target.gameObject.GetComponent<Enemy>();
+			if(sensorTargets.Contains(e))
+				sensorTargets.Remove(e);
 			
 		}
 
-		public bool IsStrongestTarget(SensorTarget target)
+		public bool IsStrongestTarget(Enemy target)
 		{
 
 			int strengthCheck = 0;
 
-			foreach(SensorTarget t in sensorTargets)
+			foreach(Enemy t in sensorTargets)
 			{
 				if(t == target)
 					continue;
@@ -107,10 +111,12 @@ namespace Harris.Combat
 
 		}
 
-		public bool IsNearestTarget(SensorTarget target)
+		public bool IsNearestTarget(Enemy target)
 		{
 			//return GetComponent<Sight>().FindNearestTarget() == target;
-			return GetComponent<Player>().GetSensor<Sight>().FindNearestTarget() == target;
+
+			Transform t = target.gameObject.transform;
+			return GetComponent<PlayerController>().GetSensor<Sight>().FindNearestTarget() == t;
  		}
 
 		private int getDefaultTargetPriority()
@@ -118,7 +124,7 @@ namespace Harris.Combat
 			return defaultTargetPriority;
 		}
 
-		private void calculateTargetPriority(SensorTarget target)
+		private void calculateTargetPriority(Enemy target)
 		{
 
 			target.setPriority(getDefaultTargetPriority());
@@ -146,11 +152,16 @@ namespace Harris.Combat
 		{
 			Instance = this;
 			enableTargetChoosing = true;
-			sensorTargets = new List<SensorTarget>();
-			PlayerThrowingObjectAnimationState._onAnimationStopped += handleThrowAnimationStopped;
+			sensorTargets = new List<Enemy>();
 
-			StrongestTargetPriorityDropDown._onPriorityChanged += handleStrongestTargetPriorityChanged;
-			NearestTargetPriorityDropDown._onPriorityChanged += handleNearestTargetPriorityChanged;
+			CombatInterface._onStrongestTargetPriorityChangedUI += handleStrongestTargetPriorityChanged;
+			CombatInterface._onNearestTargetPriorityChangedUI += handleNearestTargetPriorityChanged;
+
+			CombatInterface._requestStrongestTargetPriority += sendStrongestTargetPriority;
+			CombatInterface._requestNearestTargetPriority += sendNearestTargetPriority;
+
+			//UIEventListener._onStrongestTargetPriorityChanged += handleStrongestTargetPriorityChanged;
+			//UIEventListener._onNearestTargetPriorityChanged += handleNearestTargetPriorityChanged;
 		}
 
 		private void Start()
@@ -164,8 +175,8 @@ namespace Harris.Combat
 			//Unsorted => priority = 2(false)
 			priorities.Add(IsNearestTarget, nearestTargetPriority);
 			priorities.Add(IsStrongestTarget, strongestTargetPriority);
-			Player.Instance.GetSensor<Sight>()._onTargetDetected += AddTarget;
-			Player.Instance.GetSensor<Sight>()._onTargetRemoved += RemoveTarget;
+			PlayerController.Instance.GetSensor<Sight>()._onTargetDetected += AddTarget;
+			PlayerController.Instance.GetSensor<Sight>()._onTargetRemoved += RemoveTarget;
 	
 		}
 
@@ -182,21 +193,31 @@ namespace Harris.Combat
 			priorities[IsNearestTarget] = nearestTargetPriority;
 		}
 
+		private void sendStrongestTargetPriority()
+		{
+			CombatInterface.Instance.StrongestTargetPriority = strongestTargetPriority;
+		}
+
+		private void sendNearestTargetPriority()
+		{
+			CombatInterface.Instance.NearestTargetPriority = nearestTargetPriority;
+		}
+
 		private void calculateTargetPriorities()
 		{
-			foreach(SensorTarget target in sensorTargets)
+			foreach(Enemy target in sensorTargets)
 			{
 				calculateTargetPriority(target);
-				Debug.Log("Target " + target.transform.gameObject.name + " has priority: " + target.getPriority());
+				Debug.Log("Target " + target.transform.gameObject.name + " has priority: " + target.TargetPriority);
 			}
 		}
 
-		private SensorTarget chooseTarget()
+		private Enemy chooseTarget()
 		{
 			int currentPriority = 0;
 
 			//To store targets with same priority
-			var arr = new List<SensorTarget>();
+			var arr = new List<Enemy>();
 
 			if(sensorTargets.Count == 0)
 				return null;
@@ -206,7 +227,7 @@ namespace Harris.Combat
 				currentPriority++;
 				foreach(var target in sensorTargets)
 				{
-					if(target.getPriority() == currentPriority)
+					if(target.TargetPriority == currentPriority)
 					{
 						arr.Add(target);
 					}
@@ -231,23 +252,22 @@ namespace Harris.Combat
 			if(chosenTarget != null)
 				sensorTargets.Add(chosenTarget);
 
-			for(int i = 0; i < GetComponent<Player>().GetSensor<Sight>().TargetsSensed.Count; i++)
+			for(int i = 0; i < GetComponent<PlayerController>().GetSensor<Sight>().TargetsSensed.Count; i++)
 			{
-				SensorTarget target = GetComponent<Player>().GetSensor<Sight>().TargetsSensed[i];
+				Transform target = GetComponent<PlayerController>().GetSensor<Sight>().TargetsSensed[i];
 
 				var directionToTargetXZ = target.transform.position - transform.position;
 				directionToTargetXZ.y = 0;
 
 				var angle1 = Vector3.Angle(transform.forward, directionToTargetXZ);
-				var angle2 = Vector3.Angle(transform.forward, playerSpineBone.forward);
 
 				//if(!sensorTargets.Contains(target))
 
 				//if angle < 90f addTarget or ...
-				if(angle1 < 90f && angle2 < 90f)
+				if(angle1 < 90f)
 				{
 					if(target != chosenTarget)
-						sensorTargets.Add(target);
+						sensorTargets.Add(target.gameObject.GetComponent<Enemy>());
 				}
 
 				//else
@@ -282,33 +302,9 @@ namespace Harris.Combat
 				}
 			}*/
 
-			Debug.Log("SensorTarget count = " + sensorTargets.Count);
+			Debug.Log("Transform count = " + sensorTargets.Count);
 
 			//sensorTargets.RemoveAll(angleTowardsTargetGreaterThan90);
-		}
-
-		private void handleThrowAnimationStopped()
-		{	
-			if(chosenTarget == null)
-				return;
-
-			var directionToChosenTargetXZ = chosenTarget.transform.position - transform.position;
-				directionToChosenTargetXZ.y = 0;
-
-			var angle1 = Vector3.Angle(transform.forward, directionToChosenTargetXZ);
-			var angle2 = Vector3.Angle(transform.forward, playerSpineBone.forward);
-
-			Debug.Log("angle2 => " + angle2);
-
-			if(angle1 > 90f || angle2 > 90f) chosenTarget = null;
-		}
-
-		private bool angleTowardsTargetGreaterThan90(SensorTarget target)
-		{
-			var directionToTargetXZ = target.transform.position - transform.position;
-			directionToTargetXZ.y = 0;
-
-			return Vector3.Angle(transform.forward, directionToTargetXZ) > 90;
 		}
 
 		public void Update()

@@ -27,8 +27,6 @@ namespace Harris.Combat
 		{
 			// init references
 			Instance = this;        
-            //HardLock._onHardLockTargetLost += handleHardLockTargetLost;
-            PlayerThrowingObjectAnimationState._onAnimationStopped += handleThrowAnimationStopped;
 		}
 
 		private void Start()
@@ -70,9 +68,6 @@ namespace Harris.Combat
 
                 //if(!((CameraController.Instance.Fsm2.CurrentState as CameraLookAtState) is SWITCHTARGET_V2))
                     //toggleMode = !toggleMode;
-                
-                if(((CameraController.Instance.Fsm2.CurrentState as CameraLookAtState) is SWITCHTARGET_V2))
-                    return;
 
                 toggleMode = !toggleMode;
 

@@ -2,7 +2,12 @@
     "name": "Harris.Combat",
     "rootNamespace": "",
     "references": [
-        "GUID:58c8c985e20b0154eaa715403c8eea27"
+        "GUID:63d79bdc46dc3934b8ae1287e5d80afe",
+        "GUID:3202efcac93ec5e42b8fad84dc5b1396",
+        "GUID:21e77774b254e9845865036f97ee3581",
+        "GUID:5f80488d4b6702e4e848b78100b48655",
+        "GUID:ce556b31a1b753c4ea8b59efc4603465",
+        "GUID:c9dc16a4227bff04b83e1b150bc489e8"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

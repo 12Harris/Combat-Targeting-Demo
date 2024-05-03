@@ -2,15 +2,15 @@
 
 #pragma warning disable 0414
 
-namespace Harris.Combat
+namespace Harris.UI
 {
 	using UnityEngine;
 	using UnityEngine.UI;
 	using System;
+	using Harris.UIInterface;
 
 	internal class NearestTargetPriorityDropDown : UIDropDown
 	{
-        public static event Action<int> _onPriorityChanged;
 		private int currentOptionValue;
 
         [SerializeField]
@@ -20,7 +20,10 @@ namespace Harris.Combat
 		{
 			base.Update();
 
-            var oldPriority = ChooseTarget.Instance.NearestTargetPriority;
+			//problem: DIRECT DEPENDENCY
+			//var oldPriority = CombatInterface.Instance.StrongestTargetPriority;
+			var oldPriority = CombatInterface.Instance.requestValue("NearestTargetPriority");
+
             int.TryParse(Dropdown.options[CurrentValue].text, out currentOptionValue);
             //ChooseTarget.Instance.StrongestTargetPriority = CurrentValue;
             Debug.Log("current nearest target priority value = " + currentOptionValue);
@@ -34,7 +37,10 @@ namespace Harris.Combat
                     strongestTargetPriorityDropDown.Dropdown.value = 0;
 
                 Debug.Log("nearest target priority value = " + currentOptionValue);
-				_onPriorityChanged.Invoke(currentOptionValue);
+
+				//to softlock
+				CombatInterface.Instance.send("NearestTargetPriorityChanged", currentOptionValue);
+
 				oldPriority = currentOptionValue;
 			}
 		}

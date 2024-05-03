@@ -7,6 +7,7 @@ namespace Harris.Combat
 	using UnityEngine;
 	using System;
 	using UnityEngine.UI;
+	using Harris.Player;
 
 	internal class HardLock : MonoBehaviour
 	{
@@ -26,16 +27,16 @@ namespace Harris.Combat
 
 		private void Start()
 		{
-			Player.Instance.GetSensor<Sight>()._onTargetDetected += handleTargetEnteredFOV;
-			Player.Instance.GetSensor<Sight>()._onTargetRemoved += handleTargetLeftFOV;
+			PlayerController.Instance.GetSensor<Sight>()._onTargetDetected += handleTargetEnteredFOV;
+			PlayerController.Instance.GetSensor<Sight>()._onTargetRemoved += handleTargetLeftFOV;
 		}
 
-		private void handleTargetEnteredFOV(SensorTarget target)
+		private void handleTargetEnteredFOV(Transform target)
 		{
 
 		}
 
-		private void handleTargetLeftFOV(SensorTarget target)
+		private void handleTargetLeftFOV(Transform target)
 		{
 
 		}
