@@ -1,0 +1,16 @@
+{
+    "name": "Harris.Combat",
+    "rootNamespace": "",
+    "references": [
+        "GUID:58c8c985e20b0154eaa715403c8eea27"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

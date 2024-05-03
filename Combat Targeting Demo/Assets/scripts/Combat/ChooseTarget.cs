@@ -16,6 +16,8 @@ namespace Harris.Combat
 {
 	using UnityEngine;
 
+
+	[AddComponentMenu("Combat/ChooseTarget")]
 	internal class ChooseTarget : MonoBehaviour
 	{
 		private IDictionary<PriorityCondition, int > priorities = new Dictionary<PriorityCondition, int>();
