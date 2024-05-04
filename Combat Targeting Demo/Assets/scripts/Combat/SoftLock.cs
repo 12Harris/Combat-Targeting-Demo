@@ -12,6 +12,7 @@ namespace Harris.Combat
 	using Harris.Interactable;
 	using Harris.Player;
 	using Harris.UIInterface;
+	using Harris.Perception;
 
 	/*public enum SoftLockMode
 	{

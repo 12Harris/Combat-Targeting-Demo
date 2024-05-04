@@ -2,7 +2,8 @@
     "name": "Harris.Player",
     "rootNamespace": "",
     "references": [
-        "GUID:21e77774b254e9845865036f97ee3581"
+        "GUID:21e77774b254e9845865036f97ee3581",
+        "GUID:4de8b1a4a0412f64997a76cd89259ca8"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

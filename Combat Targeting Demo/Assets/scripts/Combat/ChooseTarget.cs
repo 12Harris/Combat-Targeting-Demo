@@ -18,7 +18,7 @@ namespace Harris.Combat
 	using Harris.UIInterface;
 	using Harris.Player;
 	using Harris.NPC;
-
+	using Harris.Perception;
 
 	[AddComponentMenu("Combat/ChooseTarget")]
 	internal class ChooseTarget : MonoBehaviour

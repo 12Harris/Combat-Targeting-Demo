@@ -6,6 +6,8 @@ namespace Harris.Player
 {
 	using UnityEngine;
 	using System.Collections;
+	using Harris.Util;
+	using Harris.Perception;
 
 	public class PlayerController : MonoBehaviour
 	{
@@ -22,23 +24,14 @@ namespace Harris.Player
 
 		public T GetSensor<T>() where T : Sensor
 		{
-			return GetFirstExact<T, Sensor>(ref _sensors);
+			//return GetFirstExact<T, Sensor>(ref _sensors);
+			return GOComponents.GetFirstExact<T, Sensor>(gameObject, ref _sensors);
 		}
 
 
         //utility function
-		private T GetFirstExact<T, CT>(ref CT[] arr) where T : MonoBehaviour
-		{
-			//Get all components in children
-			if(arr == null) { arr = GetComponentsInChildren<CT>(); }
-
-			//get the first component that is of type T
-			foreach (var s in arr)
-			{
-				if (s is T) { return s as T; }
-			}
-			return null;
-		}
+		//get the first component of gameObject that is of type T
+		//also searhes in child
 
 		private void Update()
 		{

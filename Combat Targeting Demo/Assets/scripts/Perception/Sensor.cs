@@ -1,6 +1,6 @@
 // project armada
 
-namespace Harris
+namespace Harris.Perception
 {
 	using UnityEngine;
 	using System.Collections.Generic;

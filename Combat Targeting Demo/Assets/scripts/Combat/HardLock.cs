@@ -8,6 +8,7 @@ namespace Harris.Combat
 	using System;
 	using UnityEngine.UI;
 	using Harris.Player;
+	using Harris.Perception;
 
 	internal class HardLock : MonoBehaviour
 	{

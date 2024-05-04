@@ -1,6 +1,6 @@
 // project armada
 
-namespace Harris
+namespace Harris.Perception
 {
 	using UnityEngine;
 	using System.Collections;
@@ -31,7 +31,7 @@ namespace Harris
 				//If we stopped hearing a target then remove it from the list
 				
 			}
-			
+
 			//return null;
 		}
 	}
