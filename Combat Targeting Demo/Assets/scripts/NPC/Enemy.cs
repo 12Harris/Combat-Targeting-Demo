@@ -9,11 +9,6 @@ namespace Harris.NPC
         private int strength;
         public int Strength {get => strength; set => strength = value;}
 
-        [SerializeField]
-        private List<Transform> visibilityPoints;
-        
-        public List<Transform> VisibilityPoints => visibilityPoints;
-
         private int targetPriority;
         public int TargetPriority => targetPriority;
 

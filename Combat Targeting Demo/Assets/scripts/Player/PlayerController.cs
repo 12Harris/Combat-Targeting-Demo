@@ -8,6 +8,7 @@ namespace Harris.Player
 	using System.Collections;
 	using Harris.Util;
 	using Harris.Perception;
+	using Harris.Player.PlayerLocomotion;
 
 	public class PlayerController : MonoBehaviour
 	{

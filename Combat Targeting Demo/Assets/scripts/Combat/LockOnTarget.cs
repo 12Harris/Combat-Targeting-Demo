@@ -98,7 +98,7 @@ namespace Harris.Combat
 
             if(HardLock.Instance.HardLockTarget != null)
 			{
-				var directionToTargetXZ = HardLock.Instance.HardLockTarget.position - transform.position;
+				var directionToTargetXZ = HardLock.Instance.HardLockTarget.transform.position - transform.position;
 				directionToTargetXZ.y = 0;
 
 				var angle = Vector3.Angle(transform.forward, directionToTargetXZ);
@@ -106,7 +106,7 @@ namespace Harris.Combat
 				//if angle < 90f addTarget or ...
 				if(angle > 90f)
 				{
-					HardLock.Instance.HardLockTarget.parent.Find("Highlight").gameObject.transform.Find("Image").gameObject.GetComponent<Image>().enabled = false;
+					HardLock.Instance.HardLockTarget.transform.parent.Find("Highlight").gameObject.transform.Find("Image").gameObject.GetComponent<Image>().enabled = false;
 					//hardlockTarget = null;
 					//_onHardLockTargetLost?.Invoke();
 

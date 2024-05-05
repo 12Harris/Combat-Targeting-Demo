@@ -23,9 +23,9 @@ namespace Harris.Combat
 	internal class SoftLock : MonoBehaviour
 	{
 
-		private Transform softlockTarget;
+		private SensorTarget softlockTarget;
 
-		public Transform SoftLockTarget => softlockTarget;
+		public SensorTarget SoftLockTarget => softlockTarget;
 
 		private bool enableSoftLock;
 
@@ -34,16 +34,13 @@ namespace Harris.Combat
 
 		public static SoftLock Instance;
 
-		public static event Action<Transform> _onSoftLockTargetChanged;
+		public static event Action<SensorTarget> _onSoftLockTargetChanged;
 		public static event Action _onTargetLost;
 		private SoftLockMode mode = SoftLockMode.PRIORITY;
 
 		public SoftLockMode Mode => mode;
 
 		private bool cancelMouseTargeting;
-
-		[SerializeField]
-		private Transform playerSpineBone;
 
 		private void Awake()
 		{
@@ -75,7 +72,7 @@ namespace Harris.Combat
 		{
 			var oldSoftLockTarget = softlockTarget;
 
-			Transform target = entity.transform.parent.GetComponentInChildren<Transform>();
+			SensorTarget target = entity.transform.parent.GetComponentInChildren<SensorTarget>();
 
 			var directionToTargetXZ = target.transform.position - transform.position;
 			directionToTargetXZ.y = 0;
@@ -108,7 +105,7 @@ namespace Harris.Combat
 
 			if(enableSoftLock && mode == SoftLockMode.MOUSE && GetComponent<PlayerController>().GetSensor<Sight>().containsTarget(target))
 			{
-				softlockTarget = target.transform;
+				softlockTarget = target;
 				//highLight = softlockTarget.parent.Find("Highlight").gameObject;
 				//highLight.transform.Find("Image").gameObject.GetComponent<Image>().enabled = true;
 				Debug.Log("Soft lock Target was chosen!");
@@ -128,7 +125,7 @@ namespace Harris.Combat
 
 				if(softlockTarget != null)
 				{
-					GameObject highLight = softlockTarget.parent.Find("Highlight").gameObject;
+					GameObject highLight = softlockTarget.transform.parent.Find("Highlight").gameObject;
 					//highLight.transform.Find("Image").gameObject.GetComponent<Image>().enabled = false;
 
 					cancelMouseTargeting = true;
@@ -186,7 +183,7 @@ namespace Harris.Combat
 
 					//I can make this more compact using ternary operator...
 					if(ChooseTarget.Instance.ChosenTarget != null)
-						softlockTarget = ChooseTarget.Instance.ChosenTarget.transform;
+						softlockTarget = ChooseTarget.Instance.ChosenTarget.transform.GetComponentInChildren<SensorTarget>();
 					else
 					{
 						softlockTarget = null;

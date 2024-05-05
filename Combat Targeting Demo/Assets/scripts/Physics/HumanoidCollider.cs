@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Harris.Player
+namespace Harris.Physics
 {
 
-    [RequireComponent(typeof(Collider))]
-    internal class PlayerCollider : MonoBehaviour
+    [RequireComponent(typeof(CapsuleCollider))]
+    internal class HumanoidCollider : MonoBehaviour
     {
 
         private Vector3 bottomPoint;

@@ -64,12 +64,12 @@ namespace Harris.Combat
 		//PRIORITY CONDITIONS
 
 		//should be generic: AddTarget<T>(T target) : where T : NPC
-		public void AddTarget(Transform target)
+		public void AddTarget(SensorTarget target)
 		{
 			//if(!Transform.Contains(target))
 				//Transform.Add(target);
 
-			Enemy e = target.gameObject.GetComponent<Enemy>();
+			Enemy e = target.transform.parent.GetComponent<Enemy>();
 			
 			if(sensorTargets.Contains(e))
 				return;
@@ -85,9 +85,9 @@ namespace Harris.Combat
 			}
 		}
 
-		public void RemoveTarget(Transform target)
+		public void RemoveTarget(SensorTarget target)
 		{	
-			Enemy e = target.gameObject.GetComponent<Enemy>();
+			Enemy e = target.transform.parent.GetComponent<Enemy>();
 			if(sensorTargets.Contains(e))
 				sensorTargets.Remove(e);
 			
@@ -254,7 +254,7 @@ namespace Harris.Combat
 
 			for(int i = 0; i < GetComponent<PlayerController>().GetSensor<Sight>().TargetsSensed.Count; i++)
 			{
-				Transform target = GetComponent<PlayerController>().GetSensor<Sight>().TargetsSensed[i];
+				SensorTarget target = GetComponent<PlayerController>().GetSensor<Sight>().TargetsSensed[i];
 
 				var directionToTargetXZ = target.transform.position - transform.position;
 				directionToTargetXZ.y = 0;
@@ -266,7 +266,7 @@ namespace Harris.Combat
 				//if angle < 90f addTarget or ...
 				if(angle1 < 90f)
 				{
-					if(target != chosenTarget)
+					if(target.transform.parent.GetComponent<Enemy>() != chosenTarget)
 						sensorTargets.Add(target.gameObject.GetComponent<Enemy>());
 				}
 

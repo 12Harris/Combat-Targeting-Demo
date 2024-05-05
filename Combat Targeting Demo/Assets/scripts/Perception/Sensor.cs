@@ -8,24 +8,24 @@ namespace Harris.Perception
 
 	public abstract class Sensor : MonoBehaviour
 	{
-		public List<Transform> _targetsSensed;
-		public List<Transform> TargetsSensed => _targetsSensed;
+		public List<SensorTarget> _targetsSensed;
+		public List<SensorTarget> TargetsSensed => _targetsSensed;
 		public bool HasTarget => _targetsSensed.Count > 0;
 
 		private void Awake()
 		{
-			_targetsSensed = new List<Transform>();
+			_targetsSensed = new List<SensorTarget>();
 		}
 
-		public bool containsTarget(Transform target)
+		public bool containsTarget(SensorTarget target)
 		{
 			return _targetsSensed.Contains(target);
 		}
 
-		public Transform FindNearestTarget()
+		public SensorTarget FindNearestTarget()
 		{
 			float minDistance = Mathf.Infinity;
-			Transform nearestTarget = null;
+			SensorTarget nearestTarget = null;
 
 			foreach (var target in _targetsSensed)
 			{

@@ -21,7 +21,10 @@ namespace Harris.Perception
 	public class Sight : Sensor
 	{
 		// The object we're looking for.
-		public Transform target = null;
+		public SensorTarget target = null;
+
+		[SerializeField]
+		private List<SensorTarget> targets;
 
 		// If the object is more than this distance away, we can't see it.
 		public float maxDistance = 10f;
@@ -38,14 +41,24 @@ namespace Harris.Perception
 		public bool targetIsVisible { get; private set; }
 
 
-		public event Action<Transform> _onTargetDetected;
-		public event Action<Transform> _onTargetRemoved;
+		public event Action<SensorTarget> _onTargetDetected;
+		public event Action<SensorTarget> _onTargetRemoved;
+
+		private float checkVisibilityTimer = 0f;
+		private float checkVisibilityTimerInterval = 0.0f;
 
 
 		// Check to see if we can see the target every frame.
 		void Update()
 		{
-			targetIsVisible = CheckVisibility();
+			checkVisibilityTimer += Time.deltaTime;
+
+			if (checkVisibilityTimer > checkVisibilityTimerInterval)
+			{
+				//targetIsVisible = CheckVisibility();
+				CheckVisibility();
+				checkVisibilityTimer = 0f;
+			}
 
 			if (visualize) {
 				// Update our colour; yellow if we can see the target, white if
@@ -106,29 +119,30 @@ namespace Harris.Perception
 			}
 		}
 
+		//targets contains all targets within the visibility radius of the player
+		//it would be extreme overhead and totally inefficient to check for all targets that exist in the game
+		//it would only slow down the game
+		void GetNearbyTargets(float radius)
+		{
+			targets.Clear();
+			Collider[] hitColliders = Physics.OverlapSphere(transform.position, maxDistance);
+			foreach (var hitCollider in hitColliders)
+			{
+				SensorTarget target = hitCollider.transform.GetComponentInChildren<SensorTarget>();
+				if (target != null)
+					targets.Add(target);
+			}
+		}
+
 		// Returns true if a straight line can be drawn between this object and
 		// the target. The target must be within range, and be within the
 		// visible arc.
-		public bool CheckVisibility()
+		public void CheckVisibility()
 		{        
+			//targetsSensed contains all targets that are in the fov of the player
 
-			//shoot out 2 rays indicating the horizontal start and end of the arc
-			//initially they point in the head forward direction
-
-			//rotate the left ray by horizontalAngle/2 around the world y axis
-
-			//rotate the right ray by -horizontalAngle/2 around the world y axis
-
-			//then: create to vecors pointing in the direction of the rays
-
-			//if the right ray or left ray starts intersecting the target(event) then save the hit point of the ray on the target
-				//enemy member: visibilityReferencePoint
-			
-			//then: save the direction from the player center to the hit point of the ray(on the enemy) as vector v1
-
-			//then: if the right vector is right relative to v1 and left vector is left relative to v1 => target is visible
-
-			//else => target is unvisible, reset intersection point to Vector3.zero
+			//get all targets in direct vicinity to player
+			GetNearbyTargets(maxDistance);
 
 			var rotationAngle1 = Quaternion.AngleAxis(-horAngle / 2, Vector3.up);
 			var rotationAngle2 = Quaternion.AngleAxis(horAngle / 2, Vector3.up);
@@ -143,136 +157,149 @@ namespace Harris.Perception
 			Debug.DrawRay(transform.position, leftBorder,Color.green);
 			Debug.DrawRay(transform.position, rightBorder,Color.green);
 
-			Transform closestEnemyPoint1 = null;//for left vector
-			Transform closestEnemyPoint2 = null;//for right vector
-			float minAngle1, minAngle2;
-			
-			minAngle1 = minAngle2 = 360;
-			var enemy = target.gameObject.GetComponentInChildren<Enemy>();
-			
-			foreach(Transform point in enemy.VisibilityPoints)
+
+			foreach(SensorTarget sensorTarget in targets)
 			{
-				point.gameObject.GetComponent<Renderer>().material.color = Color.white;
-				var pointXZ = point.position;
-				pointXZ.y = 0;
-				if (Vector3.Angle(pointXZ-transform.position, leftBorder ) < minAngle1)
-				{
-					minAngle1 = Vector3.Angle(pointXZ-transform.position, leftBorder );
-					closestEnemyPoint1 = point;
-				}
+				Transform closestTargetPoint1 = null;//for left vector
+				Transform closestTargetPoint2 = null;//for right vector
+				float minAngle1, minAngle2;
 				
-				if (Vector3.Angle(pointXZ-transform.position, rightBorder) < minAngle2)
+				minAngle1 = minAngle2 = 360;
+				//var sensorTarget = target.gameObject.GetComponentInChildren<SensorTarget>();
+				
+
+				//get the closes visibility points on the sensorTarget
+				foreach(Transform point in sensorTarget.VisibilityPoints)
 				{
-					minAngle2 = Vector3.Angle(pointXZ-transform.position, rightBorder);
-					closestEnemyPoint2 = point;
-				}
-			}
-
-			closestEnemyPoint1.gameObject.GetComponent<Renderer>().material.color = Color.red;
-
-			var dirToClosestEnemyPoint1 = closestEnemyPoint1.position - transform.position;
-			dirToClosestEnemyPoint1.y = 0;
-
-			var dirToClosestEnemyPoint2 = closestEnemyPoint2.position - transform.position;
-			dirToClosestEnemyPoint2.y = 0;
-
-
-			//Debug.DrawRay(transform.position, dirToClosestEnemyPoint1,Color.green);
-			//Debug.DrawRay(transform.position, dirToClosestEnemyPoint2,Color.green);
-
-			// Compute the horizontal direction to the target
-			var directionToTargetXZ = target.position - transform.position;
-			directionToTargetXZ.y = 0;
-
-			var forwardXZ = transform.forward;
-			forwardXZ.y = 0;
-
-			// Calculate the number of degrees from the horizontal forward direction.
-			var horDegreesToTarget = 
-				//Vector3.Angle(transform.forward, directionToTarget);
-				Vector3.Angle(forwardXZ, directionToTargetXZ);
-
-			
-			var horDegreesToClosestEnemyPoint1 = Vector3.Angle(forwardXZ, dirToClosestEnemyPoint1 );
-			var horDegreesToClosestEnemyPoint2 = Vector3.Angle(forwardXZ, dirToClosestEnemyPoint2 );
-
-			// The target is within the arc if it's within half of the
-			// specified horizontal angle AND if . If it's not within the arc, it's not visible.
-			//var withinArc = horDegreesToTarget < (horAngle / 2);
-
-			var withinArc = horDegreesToClosestEnemyPoint1 < (horAngle / 2) || horDegreesToClosestEnemyPoint2 < (horAngle / 2);
-
-			Debug.Log("horDegreesToClosestEnemyPoint1 = " + horDegreesToClosestEnemyPoint1 );
-			Debug.Log("horDegreesToClosestEnemyPoint2 = " + horDegreesToClosestEnemyPoint2 );
-
-			if (withinArc == false) {
-				return false;
-			}
-
-			//left ray OR right ray(direction to enemy) must intersect enemy
-			
-			// Compute the HORIZONTAL distance to the point
-			//var horDistanceToTarget = directionToTargetXZ.magnitude;
-
-			// Our ray should go as far as the target is, or the maximum
-			// distance, whichever is shorter
-			//var rayDistance = Mathf.Min(maxDistance, horDistanceToTarget);
-
-			// Create a ray that fires out from our position to the target
-			//var ray = new Ray(transform.position, directionToTargetXZ);
-
-			// Compute the HORIZONTAL distance to the closes enemy point1
-			var horDistanceToCEP1 = dirToClosestEnemyPoint1.magnitude;
-			var horDistanceToCEP2 = dirToClosestEnemyPoint2.magnitude;
-
-			// Our ray should go as far as the target is, or the maximum
-			// distance, whichever is shorter
-			var rayDistance1 = Mathf.Min(maxDistance, horDistanceToCEP1);
-			var rayDistance2 = Mathf.Min(maxDistance, horDistanceToCEP2);
-
-			// Create a ray that fires out from our position to the target
-			var ray1 = new Ray(transform.position, dirToClosestEnemyPoint1);
-			var ray2 = new Ray(transform.position, dirToClosestEnemyPoint2);
-
-			// Store information about what was hit in this variable
-			RaycastHit hit;
-
-			// Records info about whether the target is in range and not
-			// occluded
-			var canSee = false;
-
-			// Fire the raycast. Did it hit anything?
-			if (Physics.Raycast(ray1, out hit, rayDistance1) || (Physics.Raycast(ray2, out hit, rayDistance2)))
-			{
-				// Did the ray hit our target?
-				if (hit.collider.transform == target || hit.collider.transform.parent == target)
-				{
-					// Then we can see it (that is, the ray didn't hit an
-					// obstacle in between us and the target)
-					canSee = true;
+					point.gameObject.GetComponent<Renderer>().material.color = Color.white;
+					var pointXZ = point.position;
+					//pointXZ.y = 0;
+					if (Vector3.Angle(pointXZ-transform.position, leftBorder ) < minAngle1)
+					{
+						minAngle1 = Vector3.Angle(pointXZ-transform.position, leftBorder );
+						closestTargetPoint1 = point;
+					}
+					
+					if (Vector3.Angle(pointXZ-transform.position, rightBorder) < minAngle2)
+					{
+						minAngle2 = Vector3.Angle(pointXZ-transform.position, rightBorder);
+						closestTargetPoint2 = point;
+					}
 				}
 
-				Debug.Log("Ray hit: " + hit.collider.transform.gameObject);
+				closestTargetPoint1.gameObject.GetComponent<Renderer>().material.color = Color.red;
+				closestTargetPoint2.gameObject.GetComponent<Renderer>().material.color = Color.green;
 
-				// Visualise the ray.
-				Debug.DrawLine(transform.position, hit.point);
+				var dirToClosestTargetPoint1 = closestTargetPoint1.position - transform.position;
+				dirToClosestTargetPoint1.y = 0;
 
-			}
-			else
-			{
-				// The ray didn't hit anything. This means that it reached the
-				// maximum distance, and stopped, which means we didn't hit our
-				// target. It must be out of range.
+				var dirToClosestTargetPoint2 = closestTargetPoint2.position - transform.position;
+				dirToClosestTargetPoint2.y = 0;
 
-				// Visualise the rays.
-				//Debug.DrawRay(transform.position, 
-							//directionToTargetXZ.normalized * rayDistance1);
-				Debug.Log("Ray didnt hit anything!");
+				//Debug.DrawRay(transform.position, dirToClosestEnemyPoint1,Color.green);
+				//Debug.DrawRay(transform.position, dirToClosestEnemyPoint2,Color.green);
 
+				// Compute the horizontal direction to the target
+				var directionToTargetXZ = target.transform.position - transform.position;
+				directionToTargetXZ.y = 0;
+
+				var forwardXZ = transform.forward;
+				forwardXZ.y = 0;
+
+				// Calculate the number of degrees from the horizontal forward direction.
+				var horDegreesToTarget = 
+					//Vector3.Angle(transform.forward, directionToTarget);
+					Vector3.Angle(forwardXZ, directionToTargetXZ);
+
+				
+				var horDegreesToClosestTargetPoint1 = Vector3.Angle(forwardXZ, dirToClosestTargetPoint1 );
+				var horDegreesToClosestTargetPoint2 = Vector3.Angle(forwardXZ, dirToClosestTargetPoint2 );
+
+				// The target is within the arc if it's within half of the
+				// specified horizontal angle AND if . If it's not within the arc, it's not visible.
+				//var withinArc = horDegreesToTarget < (horAngle / 2);
+				
+				//var withinArc = horDegreesToClosestEnemyPoint1 < (horAngle / 2);
+				var withinArc = horDegreesToClosestTargetPoint1 < (horAngle / 2) || horDegreesToClosestTargetPoint2 < (horAngle / 2);
+
+				if (withinArc == false) {
+					//return false;
+					if(_targetsSensed.Contains(sensorTarget))
+						_targetsSensed.Remove(sensorTarget);
+					continue;
+				}
+
+				//left ray OR right ray(direction to enemy) must intersect enemy
+				
+				// Compute the HORIZONTAL distance to the point
+				//var horDistanceToTarget = directionToTargetXZ.magnitude;
+
+				// Our ray should go as far as the target is, or the maximum
+				// distance, whichever is shorter
+				//var rayDistance = Mathf.Min(maxDistance, horDistanceToTarget);
+
+				// Create a ray that fires out from our position to the target
+				//var ray = new Ray(transform.position, directionToTargetXZ);
+
+				// Compute the HORIZONTAL distance to the closes enemy point1
+				var horDistanceToCTP1 = dirToClosestTargetPoint1.magnitude;
+				var horDistanceToCTP2 = dirToClosestTargetPoint2.magnitude;
+
+				// Our ray should go as far as the target is, or the maximum
+				// distance, whichever is shorter
+				var rayDistance1 = Mathf.Min(maxDistance, horDistanceToCTP1);
+				var rayDistance2 = Mathf.Min(maxDistance, horDistanceToCTP2);
+
+				// Create a ray that fires out from our position to the target
+				var ray1 = new Ray(transform.position, dirToClosestTargetPoint1);
+				var ray2 = new Ray(transform.position, dirToClosestTargetPoint2);
+
+				// Store information about what was hit in this variable
+				RaycastHit hit;
+
+				// Records info about whether the target is in range and not
+				// occluded
+				var canSee = false;
+
+				// Fire the raycasts. Did they hit anything?
+				if (Physics.Raycast(ray1, out hit, rayDistance1) || (Physics.Raycast(ray2, out hit, rayDistance2)))
+				{
+					// Did the ray hit our target?
+					//if (hit.collider.transform == target || hit.collider.transform.parent == target)
+					if (hit.collider.transform.parent.TryGetComponent<SensorTarget>(out SensorTarget target))
+					{
+						// Then we can see it (that is, the ray didn't hit an
+						// obstacle in between us and the target)
+						canSee = true;
+
+						if(!_targetsSensed.Contains(target))
+							_targetsSensed.Add(target);
+					}
+
+					Debug.Log("Ray hit: " + hit.collider.transform.gameObject);
+
+					// Visualise the ray.
+					Debug.DrawLine(transform.position, hit.point);
+
+				}
+				else
+				{
+					if(_targetsSensed.Contains(sensorTarget))
+						_targetsSensed.Remove(sensorTarget);
+					// The ray didn't hit anything. This means that it reached the
+					// maximum distance, and stopped, which means we didn't hit our
+					// target. It must be out of range.
+
+					// Visualise the rays.
+					//Debug.DrawRay(transform.position, 
+								//directionToTargetXZ.normalized * rayDistance1);
+					//Debug.Log("Ray didnt hit anything!");
+
+				}
 			}
 
 			// Is it visible?
-			return canSee;
+			//return canSee;
 
 		}
 	}

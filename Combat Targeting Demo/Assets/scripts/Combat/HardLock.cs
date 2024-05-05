@@ -14,8 +14,8 @@ namespace Harris.Combat
 	{
 
 		public static HardLock Instance;
-		private Transform hardlockTarget;
-		public Transform HardLockTarget {get => hardlockTarget; set => hardlockTarget = value;}
+		private SensorTarget hardlockTarget;
+		public SensorTarget HardLockTarget {get => hardlockTarget; set => hardlockTarget = value;}
 		public static event Action _onHardLockTargetChanged;
 
 		private void Awake()
@@ -32,19 +32,19 @@ namespace Harris.Combat
 			PlayerController.Instance.GetSensor<Sight>()._onTargetRemoved += handleTargetLeftFOV;
 		}
 
-		private void handleTargetEnteredFOV(Transform target)
+		private void handleTargetEnteredFOV(SensorTarget target)
 		{
 
 		}
 
-		private void handleTargetLeftFOV(Transform target)
+		private void handleTargetLeftFOV(SensorTarget target)
 		{
 
 		}
 
 		private void handleHardLockDisabled()
 		{
-			hardlockTarget.parent.Find("Highlight").gameObject.transform.Find("Image").gameObject.GetComponent<Image>().enabled = false;
+			hardlockTarget.transform.parent.Find("Highlight").gameObject.transform.Find("Image").gameObject.GetComponent<Image>().enabled = false;
 			//cancelTargeting = true;	
 			//hardlockTarget = null;
 		}
@@ -55,7 +55,7 @@ namespace Harris.Combat
 			{
 				hardlockTarget = SoftLock.Instance.SoftLockTarget;
 				_onHardLockTargetChanged?.Invoke();
-				hardlockTarget.parent.Find("Highlight").gameObject.transform.Find("Image").gameObject.GetComponent<Image>().enabled = true;	
+				hardlockTarget.transform.parent.Find("Highlight").gameObject.transform.Find("Image").gameObject.GetComponent<Image>().enabled = true;	
 			}
 			else
 			{
