@@ -7,18 +7,17 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections;
 using System.Collections.Generic;
-using System;
+//using System;
 using System.Linq;
 using Unity.Collections;
 
 
-namespace Harris.Combat
+namespace Harris.Player.Combat
 {
-	using UnityEngine;
 	using Harris.UIInterface;
-	using Harris.Player;
 	using Harris.NPC;
 	using Harris.Perception;
+	using Harris.Util;
 
 	[AddComponentMenu("Combat/ChooseTarget")]
 	internal class ChooseTarget : MonoBehaviour
@@ -30,9 +29,6 @@ namespace Harris.Combat
 		public delegate bool PriorityCondition(Enemy target);
 
 		private int defaultTargetPriority = 3;
-
-		[SerializeField]
-		private List<Enemy> sensorTargets;
 
 		private Enemy chosenTarget;
 
@@ -58,53 +54,21 @@ namespace Harris.Combat
 
 		public static ChooseTarget Instance;
 
-
-		//public static event Action<Transform> _onTargetDetected;
-
-		//PRIORITY CONDITIONS
-
-		//should be generic: AddTarget<T>(T target) : where T : NPC
-		public void AddTarget(SensorTarget target)
-		{
-			//if(!Transform.Contains(target))
-				//Transform.Add(target);
-
-			Enemy e = target.transform.parent.GetComponent<Enemy>();
-			
-			if(sensorTargets.Contains(e))
-				return;
-
-			var directionToTargetXZ = e.transform.position - transform.position;
-			directionToTargetXZ.y = 0;
-
-			var angle = Vector3.Angle(transform.forward, directionToTargetXZ);
-
-			if(angle < 90f)
-			{
-				sensorTargets.Add(e);
-			}
-		}
-
-		public void RemoveTarget(SensorTarget target)
-		{	
-			Enemy e = target.transform.parent.GetComponent<Enemy>();
-			if(sensorTargets.Contains(e))
-				sensorTargets.Remove(e);
-			
-		}
-
 		public bool IsStrongestTarget(Enemy target)
 		{
 
 			int strengthCheck = 0;
 
-			foreach(Enemy t in sensorTargets)
+			foreach(SensorTarget t in PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed)
 			{
-				if(t == target)
+
+				var enemy = t.transform.parent.GetComponent<Enemy>();
+
+				if(enemy == target)
 					continue;
 
-				if(t.Strength > strengthCheck)
-					strengthCheck = t.Strength;
+				if(enemy.Strength > strengthCheck)
+					strengthCheck = enemy.Strength;
 			}
 
 			return target.Strength > strengthCheck;
@@ -138,7 +102,7 @@ namespace Harris.Combat
 				//lets assume the strongest target is also the nearest target,
 				//then its final priority would be 2 and not 1, which is wrong behaviour
 				PriorityCondition pCondition = p.Key;
-				if(pCondition(target))
+				if(pCondition(target) && getAngleToTarget(target) < 45)
 				{
 					//target.setPriority(sortedPriorities[pCondition]);
 					target.setPriority(priorities[pCondition]);
@@ -148,11 +112,18 @@ namespace Harris.Combat
 
 		}
 
+		private float getAngleToTarget(Enemy target)
+		{
+			var directionToTargetXZ = target.transform.position - PlayerControllerInstance.Instance.HeadTransform.position;
+				directionToTargetXZ.y = 0;
+
+			return Vector3.Angle(PlayerControllerInstance.Instance.HeadTransform.forward, directionToTargetXZ);
+		}
+
 		private void Awake()
 		{
 			Instance = this;
 			enableTargetChoosing = true;
-			sensorTargets = new List<Enemy>();
 
 			CombatInterface._onStrongestTargetPriorityChangedUI += handleStrongestTargetPriorityChanged;
 			CombatInterface._onNearestTargetPriorityChangedUI += handleNearestTargetPriorityChanged;
@@ -175,8 +146,8 @@ namespace Harris.Combat
 			//Unsorted => priority = 2(false)
 			priorities.Add(IsNearestTarget, nearestTargetPriority);
 			priorities.Add(IsStrongestTarget, strongestTargetPriority);
-			PlayerController.Instance.GetSensor<Sight>()._onTargetDetected += AddTarget;
-			PlayerController.Instance.GetSensor<Sight>()._onTargetRemoved += RemoveTarget;
+			//PlayerController.Instance.GetSensor<Sight>()._onTargetDetected += AddTarget;
+			//PlayerController.Instance.GetSensor<Sight>()._onTargetLost += RemoveTarget;
 	
 		}
 
@@ -205,10 +176,12 @@ namespace Harris.Combat
 
 		private void calculateTargetPriorities()
 		{
-			foreach(Enemy target in sensorTargets)
+			//foreach(Enemy target in sensorTargets)
+			foreach(SensorTarget target in PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed)
 			{
-				calculateTargetPriority(target);
-				Debug.Log("Target " + target.transform.gameObject.name + " has priority: " + target.TargetPriority);
+				var enemy = target.transform.parent.GetComponent<Enemy>();
+				calculateTargetPriority(enemy);
+				Debug.Log("Target " + enemy.transform.gameObject.name + " has priority: " + enemy.TargetPriority);
 			}
 		}
 
@@ -219,94 +192,39 @@ namespace Harris.Combat
 			//To store targets with same priority
 			var arr = new List<Enemy>();
 
-			if(sensorTargets.Count == 0)
+			if(PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed.Count == 0)
 				return null;
 
 			while(arr.Count == 0)
 			{
 				currentPriority++;
-				foreach(var target in sensorTargets)
+				foreach(var target in PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed)
 				{
-					if(target.TargetPriority == currentPriority)
+					var enemy = target.transform.parent.GetComponent<Enemy>();
+					if(enemy.TargetPriority == currentPriority)
 					{
-						arr.Add(target);
+						arr.Add(enemy);
 					}
 				}
 			}
 			
-			//only 1 target has the highest priority, so return that
-			if(arr.Count == 1)
+			if(currentPriority != defaultTargetPriority)
 			{
-				return arr[0];
-			}
+				//only 1 target has the highest priority, so return that
+				if(arr.Count == 1)
+				{
+					return arr[0];
+				}
 
-			//more than 1 target has the highest priority, so return a random target with highest priority
-			int randIndex = Random.Range(0, arr.Count);
-			return arr[randIndex];
+				//more than 1 target has the highest priority, so return a random target with highest priority
+				int randIndex = Random.Range(0, arr.Count);
+				return arr[randIndex];
+			}
+			return null;
 
 		}
 
-		private void getTargets()
-		{
-			sensorTargets.Clear();
-			if(chosenTarget != null)
-				sensorTargets.Add(chosenTarget);
-
-			for(int i = 0; i < GetComponent<PlayerController>().GetSensor<Sight>().TargetsSensed.Count; i++)
-			{
-				SensorTarget target = GetComponent<PlayerController>().GetSensor<Sight>().TargetsSensed[i];
-
-				var directionToTargetXZ = target.transform.position - transform.position;
-				directionToTargetXZ.y = 0;
-
-				var angle1 = Vector3.Angle(transform.forward, directionToTargetXZ);
-
-				//if(!sensorTargets.Contains(target))
-
-				//if angle < 90f addTarget or ...
-				if(angle1 < 90f)
-				{
-					if(target.transform.parent.GetComponent<Enemy>() != chosenTarget)
-						sensorTargets.Add(target.gameObject.GetComponent<Enemy>());
-				}
-
-				//else
-				/*else if(target == chosenTarget && !cancelTargeting)
-				{
-					sensorTargets.Add(target);
-					cancelTargeting = true;
-				
-				}*/
-			}
-
-			/*for(int i =  sensorTargets.Count - 1; i >= 0; i--)
-			{
-				var directionToTargetXZ = sensorTargets[i].transform.position - transform.position;
-				directionToTargetXZ.y = 0;
-
-				var angle = Vector3.Angle(transform.forward, directionToTargetXZ);
-
-				if(angle > 90f)
-				{
-					Debug.Log("Angle :) > 90");
-					//sensorTargets.RemoveAt(i);
-
-					if(sensorTargets[i] == chosenTarget)
-					{
-						//sensorTargets.RemoveAt(i);
-						cancelTargeting = true;
-					}
-					
-					else
-						sensorTargets.RemoveAt(i);
-				}
-			}*/
-
-			Debug.Log("Transform count = " + sensorTargets.Count);
-
-			//sensorTargets.RemoveAll(angleTowardsTargetGreaterThan90);
-		}
-
+		
 		public void Update()
 		{
 			//Debug.Log("there are " + sensorTargets.Count + " targets!");
@@ -315,7 +233,7 @@ namespace Harris.Combat
 				enableTargetChoosing = !enableTargetChoosing;
 			}*/
 
-			if(sensorTargets.Count == 0)
+			/*if(sensorTargets.Count == 0)
 			{
 				//enableTargetChoosing = false;
 				chosenTarget = null;
@@ -323,7 +241,7 @@ namespace Harris.Combat
 			else
 			{
 				enableTargetChoosing = true;
-			}
+			}*/
 
 			if(enableTargetChoosing)
 			{
@@ -332,17 +250,18 @@ namespace Harris.Combat
 				timer += Time.deltaTime;
 				if(timer > interval)
 				{
-					getTargets();
 					calculateTargetPriorities();
 					chosenTarget = chooseTarget();
 
 					if(chosenTarget == null)
-						Debug.Log("chosen target is null!");		
+						Debug.Log("chosen target is null!");
+					else
+						Debug.Log("chosen target is: " + chosenTarget);		
 					timer = 0f;
 				}
 			}
 
-			else if(enableTargetChoosing == false)
+			else
 			{
 				chosenTarget = null;
 				timer = 0f;

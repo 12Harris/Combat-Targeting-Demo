@@ -2,7 +2,7 @@
 
 #pragma warning disable 0414
 
-namespace Harris.Combat
+namespace Harris.Player.Combat
 {
 	using UnityEngine;
 	using System;
@@ -29,7 +29,7 @@ namespace Harris.Combat
 		private void Start()
 		{
 			PlayerController.Instance.GetSensor<Sight>()._onTargetDetected += handleTargetEnteredFOV;
-			PlayerController.Instance.GetSensor<Sight>()._onTargetRemoved += handleTargetLeftFOV;
+			PlayerController.Instance.GetSensor<Sight>()._onTargetLost += handleTargetLeftFOV;
 		}
 
 		private void handleTargetEnteredFOV(SensorTarget target)

@@ -2,7 +2,7 @@
 
 #pragma warning disable 0414
 
-namespace Harris.Combat
+namespace Harris.Player.Combat
 {
 	using UnityEngine;
     using System;

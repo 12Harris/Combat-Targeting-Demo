@@ -42,7 +42,7 @@ namespace Harris.Perception
 
 
 		public event Action<SensorTarget> _onTargetDetected;
-		public event Action<SensorTarget> _onTargetRemoved;
+		public event Action<SensorTarget> _onTargetLost;
 
 		private float checkVisibilityTimer = 0f;
 		private float checkVisibilityTimerInterval = 0.0f;
@@ -225,7 +225,10 @@ namespace Harris.Perception
 				if (withinArc == false) {
 					//return false;
 					if(_targetsSensed.Contains(sensorTarget))
+					{
 						_targetsSensed.Remove(sensorTarget);
+						_onTargetLost.Invoke(sensorTarget);
+					}
 					continue;
 				}
 
@@ -273,7 +276,10 @@ namespace Harris.Perception
 						canSee = true;
 
 						if(!_targetsSensed.Contains(target))
+						{
 							_targetsSensed.Add(target);
+							_onTargetDetected?.Invoke(target);
+						}
 					}
 
 					Debug.Log("Ray hit: " + hit.collider.transform.gameObject);
@@ -286,6 +292,7 @@ namespace Harris.Perception
 				{
 					if(_targetsSensed.Contains(sensorTarget))
 						_targetsSensed.Remove(sensorTarget);
+						_onTargetLost.Invoke(sensorTarget);
 					// The ray didn't hit anything. This means that it reached the
 					// maximum distance, and stopped, which means we didn't hit our
 					// target. It must be out of range.

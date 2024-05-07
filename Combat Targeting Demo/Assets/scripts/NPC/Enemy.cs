@@ -6,6 +6,7 @@ namespace Harris.NPC
 {
     public class Enemy : MonoBehaviour
     {
+        [SerializeField]
         private int strength;
         public int Strength {get => strength; set => strength = value;}
 

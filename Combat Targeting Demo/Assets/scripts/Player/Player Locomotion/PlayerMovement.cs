@@ -6,14 +6,26 @@ namespace Harris.Player.PlayerLocomotion
 {
     using Harris.Util;
 
+    public enum PlayerDirection
+    {
+        WEST,
+        NORTH,
+        EAST,
+        SOUTH
+    }
+
     public class PlayerMovementState:FSM_State
     {
         private Rigidbody rb;
-        public Rigidbody RB => rb;
+        public Rigidbody RB => rb;  
 
         protected float groundSpeed = 5f;
 
         protected float groundDeceleration = 0.9f;
+
+        private static PlayerDirection playerDirection;
+
+        public static PlayerDirection PlayerDirection{get =>  playerDirection; set => playerDirection = value;}
 
         public PlayerMovementState()
         {
@@ -55,13 +67,18 @@ namespace Harris.Player.PlayerLocomotion
         {
             //CAMERA LOOK AT FSM
 			PlayerMovementState idleState = new IdleState();//zooming takes place in idle state
+            PlayerMovementState turnState = new TurnState();
 			PlayerMovementState moveState = new MoveState();
 ;
 			int index1 = playerMovementFSM.AddState(idleState);
-			int index2 = playerMovementFSM.AddState(moveState);
-			
-            playerMovementFSM.AddTransition(index1, index2, idleState.GetExitGuard("Moving"));
-            playerMovementFSM.AddTransition(index2, index1, moveState.GetExitGuard("Idle"));
+			int index2 = playerMovementFSM.AddState(turnState);
+			int index3 = playerMovementFSM.AddState(moveState);
+
+            playerMovementFSM.AddTransition(index1, index2, idleState.GetExitGuard("Turning"));
+            playerMovementFSM.AddTransition(index1, index3, idleState.GetExitGuard("Moving"));
+            playerMovementFSM.AddTransition(index2, index1, turnState.GetExitGuard("Idle"));
+            playerMovementFSM.AddTransition(index2, index3, turnState.GetExitGuard("Moving"));
+            playerMovementFSM.AddTransition(index3, index1, idleState.GetExitGuard("Idle"));
 			
 			//switch from switchtarget to zoom_lookat
 
@@ -77,6 +94,18 @@ namespace Harris.Player.PlayerLocomotion
         // Update is called once per frame
         void Update()
         {
+            if(transform.forward.x < 0)
+                PlayerMovementState.PlayerDirection = PlayerDirection.WEST;
+
+            else if(transform.forward.y > 0)
+                PlayerMovementState.PlayerDirection = PlayerDirection.NORTH;
+
+            else if(transform.forward.x > 0)
+                PlayerMovementState.PlayerDirection = PlayerDirection.EAST;
+
+            else if(transform.forward.y < 0)
+                PlayerMovementState.PlayerDirection = PlayerDirection.SOUTH;
+
             playerMovementFSM.Tick(Time.deltaTime);
         }
 

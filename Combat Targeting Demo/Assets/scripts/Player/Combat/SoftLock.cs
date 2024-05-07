@@ -2,7 +2,7 @@
 
 #pragma warning disable 0414
 
-namespace Harris.Combat
+namespace Harris.Player.Combat
 {
 	using UnityEngine;
 	using System.Collections;
@@ -10,7 +10,6 @@ namespace Harris.Combat
 	using UnityEngine.UI;
 	using System;
 	using Harris.Interactable;
-	using Harris.Player;
 	using Harris.UIInterface;
 	using Harris.Perception;
 
@@ -160,7 +159,7 @@ namespace Harris.Combat
 				{
 					if(mode == SoftLockMode.PRIORITY)
 					{
-						mode = SoftLockMode.MOUSE;
+						//mode = SoftLockMode.MOUSE;
 					}
 					else
 					{
