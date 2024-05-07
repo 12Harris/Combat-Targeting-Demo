@@ -14,22 +14,33 @@ namespace Harris.Player.PlayerLocomotion
         private bool moving;
         private bool idle;
 
-        private RotateObject playerRotator;
+        private RotateObject playerBodyRotator;
+        private RotateObject playerHeadRotator;
 
-        public TurnState()
+        private float turnAngle;
+        public float TurnAngle {get => turnAngle; set => turnAngle = value;}
+
+        public TurnState(PlayerMovement playerMovement) :base(playerMovement)
         {
             AddExitGuard("Moving", () => {return moving;});
             AddExitGuard("Idle", () => {return idle;});
-            playerRotator = PlayerControllerInstance.Instance.transform.GetComponent<RotateObject>();
-            playerRotator._onStopRotation += handleTurnCompleted;
+            playerHeadRotator = PlayerControllerInstance.Instance.HeadTransform.GetComponent<RotateObject>();
+            playerBodyRotator = PlayerControllerInstance.Instance.BodyTransform.GetComponent<RotateObject>();
+            playerBodyRotator._onStopRotation += handleTurnCompleted;
         }
 
         private void handleTurnCompleted()
         {
-            if(PlayerMovementState.GetMovement() != Vector2.zero)
+            if(PlayerMovementState.Move2d != Vector2.zero)
+            {
                 moving = true;
+                Debug.Log("MOVING!!");
+            }
             else
+            {
                 idle = true;
+                Debug.Log("IDLE!!");
+            }
         }
 
         public override void Enter()
@@ -39,7 +50,14 @@ namespace Harris.Player.PlayerLocomotion
             moving = false;
             idle = false;
             RB.velocity = Vector3.zero;
-            playerRotator.StartCoroutine(playerRotator.Rotate(90,0.5f));
+            //Debug.Log("entering turn state!");
+            //rotate the player
+            playerBodyRotator.StartCoroutine(playerBodyRotator.Rotate(TurnAngle,0.25f));
+            //get the angle between headTransform forward and player forward
+            var deltaAngle = Vector3.Angle(PlayerControllerInstance.Instance.HeadTransform.forward, PlayerControllerInstance.Instance.BodyTransform.forward);
+            //roate the head of the player
+            playerHeadRotator.StartCoroutine(playerHeadRotator.Rotate(TurnAngle+deltaAngle,0.25f));
+        
         }
 
         public override void Tick(in float deltaTime)

@@ -24,6 +24,10 @@ namespace Harris.Player
 
 		public Transform HeadTransform => headTransform;
 
+		[SerializeField] 
+		private Transform bodyTransform;
+		public Transform BodyTransform => bodyTransform;
+
 		private void Awake()
 		{
 			instance = this;

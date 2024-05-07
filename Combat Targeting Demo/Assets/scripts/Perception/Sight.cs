@@ -291,8 +291,10 @@ namespace Harris.Perception
 				else
 				{
 					if(_targetsSensed.Contains(sensorTarget))
+					{
 						_targetsSensed.Remove(sensorTarget);
 						_onTargetLost.Invoke(sensorTarget);
+					}
 					// The ray didn't hit anything. This means that it reached the
 					// maximum distance, and stopped, which means we didn't hit our
 					// target. It must be out of range.

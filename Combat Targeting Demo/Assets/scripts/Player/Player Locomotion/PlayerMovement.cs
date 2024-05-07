@@ -23,13 +23,22 @@ namespace Harris.Player.PlayerLocomotion
 
         protected float groundDeceleration = 0.9f;
 
-        private static PlayerDirection playerDirection;
+        private static PlayerDirection playerDirection = PlayerDirection.NORTH;
 
         public static PlayerDirection PlayerDirection{get =>  playerDirection; set => playerDirection = value;}
 
-        public PlayerMovementState()
+        //reference to the player movement fsm
+        private PlayerMovement playerMovement;
+
+        public PlayerMovement PlayerMovement => playerMovement;
+
+        private static Vector2 move2d;
+        public static Vector2 Move2d => move2d;
+
+        public PlayerMovementState(PlayerMovement _playerMovement)
         {
             rb = PlayerControllerInstance.Instance.transform.GetComponentInChildren<Rigidbody>();
+            playerMovement = _playerMovement;
         }
 
         /// <summary>
@@ -38,7 +47,7 @@ namespace Harris.Player.PlayerLocomotion
 		/// <returns>
 		/// 2D movement vector
 		/// </returns>
-		public static Vector2 GetMovement()
+		public static Vector2 GetMovementInput()
 		{
 			var v = Vector2.zero;
 
@@ -57,18 +66,178 @@ namespace Harris.Player.PlayerLocomotion
             rb.velocity = rb.velocity * groundDeceleration;
 
         }
+
+        public override void Tick(in float deltaTime)
+        {
+            base.Tick(in deltaTime);
+
+            move2d = PlayerMovementState.GetMovementInput();
+
+
+            if(move2d.magnitude > 0f && (this is IdleState || this is MoveState))
+            {
+                Debug.Log("höhn");
+                #region WEST
+                //turn 90° clockwise(north)
+                if(PlayerMovementState.PlayerDirection == PlayerDirection.WEST && move2d.y > 0)
+                {
+                    PlayerMovement.TurnState.TurnAngle = 90;
+
+                    if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+    
+                }
+
+                //turn 180° clockwise(east)
+                else if(PlayerMovementState.PlayerDirection == PlayerDirection.WEST && move2d.x > 0)
+                {
+                    PlayerMovement.TurnState.TurnAngle = 180;
+                    if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+                }
+
+                //turn 90° counter clockwise(south)
+                else if(PlayerMovementState.PlayerDirection == PlayerDirection.WEST && move2d.y < 0)
+                {
+                    PlayerMovement.TurnState.TurnAngle = -90;
+                    if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+                }
+                #endregion
+
+
+                #region NORTH
+                //turn 90° counter clockwise(west)
+                else if(PlayerMovementState.PlayerDirection == PlayerDirection.NORTH && move2d.x < 0)
+                {
+                    PlayerMovement.TurnState.TurnAngle = -90;
+                    if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+                } 
+
+                //turn 90° clockwise(east)
+                else if(PlayerMovementState.PlayerDirection == PlayerDirection.NORTH && move2d.x > 0)
+                {
+                    PlayerMovement.TurnState.TurnAngle = 90;
+                    if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+                }
+
+                //turn 180° clockwise(south)
+                else if(PlayerMovementState.PlayerDirection == PlayerDirection.NORTH && move2d.y < 0)
+                {
+                    PlayerMovement.TurnState.TurnAngle = 180;
+                    if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+                }
+                #endregion
+
+                #region EAST
+
+                 //turn 90° counter clockwise(north)
+                if(PlayerMovementState.PlayerDirection == PlayerDirection.EAST && move2d.y > 0)
+                {
+                    PlayerMovement.TurnState.TurnAngle = -90;
+                    if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+                }
+
+                //turn 180° clockwise(east)
+                else if(PlayerMovementState.PlayerDirection == PlayerDirection.EAST && move2d.x < 0)
+                {
+                    PlayerMovement.TurnState.TurnAngle = 180;
+                    if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+                }
+
+                //turn 90°clockwise(south)
+                else if(PlayerMovementState.PlayerDirection == PlayerDirection.EAST && move2d.y < 0)
+                {
+                    PlayerMovement.TurnState.TurnAngle = 90;
+                    if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+                }
+
+                #endregion
+                
+
+                #region SOUTH
+                //turn 90° clockwise(west)
+                else if(PlayerMovementState.PlayerDirection == PlayerDirection.SOUTH && move2d.x < 0)
+                {
+                    PlayerMovement.TurnState.TurnAngle = 90;
+                    if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+                } 
+
+                //turn 90° clockwise(east)
+                else if(PlayerMovementState.PlayerDirection == PlayerDirection.SOUTH && move2d.x > 0)
+                {
+                    PlayerMovement.TurnState.TurnAngle = -90;
+                    if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+                }
+
+                //turn 180° clockwise(north)
+                else if(PlayerMovementState.PlayerDirection == PlayerDirection.SOUTH && move2d.y > 0)
+                {
+                    Debug.Log("SHOULD TURN 180!!");
+                    PlayerMovement.TurnState.TurnAngle = 180;
+                   if (this is IdleState)
+                        (this as IdleState).Turning = true;
+                    else
+                        (this as MoveState).Turning = true;
+                }
+                #endregion
+
+                else if (this is IdleState)
+                {
+                    (this as IdleState).Moving = true;
+                }
+            }
+        }
     }
 
     public class PlayerMovement : MonoBehaviour
     {
         private FSM playerMovementFSM = new FSM();
 
+        private IdleState idleState;
+        private TurnState turnState;
+        private MoveState moveState;
+
+        public IdleState IdleState => idleState;
+        public TurnState TurnState => turnState;
+        public MoveState MoveState => moveState;
+
         void Awake()
         {
-            //CAMERA LOOK AT FSM
-			PlayerMovementState idleState = new IdleState();//zooming takes place in idle state
-            PlayerMovementState turnState = new TurnState();
-			PlayerMovementState moveState = new MoveState();
+
+			idleState = new IdleState(this);//zooming takes place in idle state
+            turnState = new TurnState(this);
+			moveState = new MoveState(this);
 ;
 			int index1 = playerMovementFSM.AddState(idleState);
 			int index2 = playerMovementFSM.AddState(turnState);
@@ -78,8 +247,8 @@ namespace Harris.Player.PlayerLocomotion
             playerMovementFSM.AddTransition(index1, index3, idleState.GetExitGuard("Moving"));
             playerMovementFSM.AddTransition(index2, index1, turnState.GetExitGuard("Idle"));
             playerMovementFSM.AddTransition(index2, index3, turnState.GetExitGuard("Moving"));
-            playerMovementFSM.AddTransition(index3, index1, idleState.GetExitGuard("Idle"));
-			
+            playerMovementFSM.AddTransition(index3, index1, moveState.GetExitGuard("Idle"));
+			playerMovementFSM.AddTransition(index3, index2, moveState.GetExitGuard("Turning"));
 			//switch from switchtarget to zoom_lookat
 
 			idleState.Enter();
@@ -94,17 +263,23 @@ namespace Harris.Player.PlayerLocomotion
         // Update is called once per frame
         void Update()
         {
-            if(transform.forward.x < 0)
+            if(Vector3.Angle(PlayerControllerInstance.Instance.BodyTransform.forward, -Vector3.right) < 1f)
                 PlayerMovementState.PlayerDirection = PlayerDirection.WEST;
 
-            else if(transform.forward.y > 0)
+            else if(Vector3.Angle(PlayerControllerInstance.Instance.BodyTransform.forward, Vector3.forward) < 1f)
+            {
+                //Debug.Log("player direction is north??? ");
                 PlayerMovementState.PlayerDirection = PlayerDirection.NORTH;
+            }
 
-            else if(transform.forward.x > 0)
+            else if(Vector3.Angle(PlayerControllerInstance.Instance.BodyTransform.forward, Vector3.right) < 1f)
                 PlayerMovementState.PlayerDirection = PlayerDirection.EAST;
 
-            else if(transform.forward.y < 0)
+            else if(Vector3.Angle(PlayerControllerInstance.Instance.BodyTransform.forward, -Vector3.forward) < 1f)
                 PlayerMovementState.PlayerDirection = PlayerDirection.SOUTH;
+
+
+            Debug.Log("player direction = " + PlayerMovementState.PlayerDirection);
 
             playerMovementFSM.Tick(Time.deltaTime);
         }
