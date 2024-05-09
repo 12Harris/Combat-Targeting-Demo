@@ -76,7 +76,6 @@ namespace Harris.Player.PlayerLocomotion
 
             if(move2d.magnitude > 0f && (this is IdleState || this is MoveState))
             {
-                Debug.Log("höhn");
                 #region WEST
                 //turn 90° clockwise(north)
                 if(PlayerMovementState.PlayerDirection == PlayerDirection.WEST && move2d.y > 0)

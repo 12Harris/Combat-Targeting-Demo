@@ -181,8 +181,8 @@ namespace Harris.Player.Combat
 					}*/
 
 					//I can make this more compact using ternary operator...
-					if(ChooseTarget.Instance.ChosenTarget != null)
-						softlockTarget = ChooseTarget.Instance.ChosenTarget.transform.GetComponentInChildren<SensorTarget>();
+					if(TargetChooser.Instance.ChosenTarget != null)
+						softlockTarget = TargetChooser.Instance.ChosenTarget.transform.GetComponentInChildren<SensorTarget>();
 					else
 					{
 						softlockTarget = null;

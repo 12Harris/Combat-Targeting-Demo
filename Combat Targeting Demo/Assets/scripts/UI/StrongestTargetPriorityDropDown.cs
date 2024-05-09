@@ -24,6 +24,8 @@ namespace Harris.UI
             //var oldPriority = ChooseTarget.Instance.StrongestTargetPriority;
 			var oldPriority = CombatInterface.Instance.requestValue("StrongestTargetPriority");
 
+			Debug.Log("OLD PRIORITY(strongest target) = " +  oldPriority);
+
             int.TryParse(Dropdown.options[CurrentValue].text, out currentOptionValue);
             //ChooseTarget.Instance.StrongestTargetPriority = CurrentValue;
             Debug.Log("current strongest target priority value = " + currentOptionValue);

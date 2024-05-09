@@ -9,6 +9,7 @@ namespace Harris.UIInterface
 	using UnityEngine.UI;
 	using TMPro;
 	using Harris;
+	using Harris.NPC;
 
     public class CombatInterface : MonoBehaviour
     {   
@@ -24,9 +25,10 @@ namespace Harris.UIInterface
 		//Messages to the SoftLock System
         public static event Action<int> _onStrongestTargetPriorityChangedUI;//to softlock
         public static event Action<int> _onNearestTargetPriorityChangedUI;//to softlock
+		public static event Action<SoftLockMode> _onSoftLockModeChanged;//to UI
 
 		//Messages from the SoftLock System
-		public static event Action<SoftLockMode> _onSoftLockModeChanged;//to UI
+		public static event Action<Enemy, Enemy> _onSoftLockTargetChanged;//to UI
 
 		//Actions to request values from SoftLock System
 		public static event Action _requestStrongestTargetPriority;//subscribe to event in choosetarget module
@@ -53,7 +55,7 @@ namespace Harris.UIInterface
 		}
 
 		//Sending messages
-		public void send(string msg, int value)
+		public void send(string msg, int value = -1)
 		{
 			switch(msg)
 			{
@@ -64,6 +66,11 @@ namespace Harris.UIInterface
 
 				case "NearestTargetPriorityChanged":
 					_onNearestTargetPriorityChangedUI?.Invoke(value);//subscribe to event in choosetarget module
+				break;
+
+				//messages from softlock system to UI
+				case "SoftLockTargetChanged":
+					//_onSoftLockTargetChanged?.Invoke();//subscribe to event in UI module
 				break;
 			}
 		}

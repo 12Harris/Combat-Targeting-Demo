@@ -18,9 +18,11 @@ namespace Harris.Player.Combat
 	using Harris.NPC;
 	using Harris.Perception;
 	using Harris.Util;
+	using Harris.Player.Combat.Weapons;
+	using System;
 
 	[AddComponentMenu("Combat/ChooseTarget")]
-	internal class ChooseTarget : MonoBehaviour
+	internal class TargetChooser : MonoBehaviour
 	{
 		private IDictionary<PriorityCondition, int > priorities = new Dictionary<PriorityCondition, int>();
 
@@ -30,7 +32,7 @@ namespace Harris.Player.Combat
 
 		private int defaultTargetPriority = 3;
 
-		private Enemy chosenTarget;
+		private Enemy chosenTarget = null;
 
 		public Enemy ChosenTarget => chosenTarget;
 
@@ -46,13 +48,17 @@ namespace Harris.Player.Combat
 
 		[SerializeField]
 		private float timer = 0f;
-		private float interval = 1f;
+		private float interval = .1f;
 
 		private bool enableTargetChoosing;
 
 		private bool cancelTargeting;
 
-		public static ChooseTarget Instance;
+		public static TargetChooser Instance;
+
+		public static event Action<Enemy, Enemy> _onSoftLockTargetChanged;
+		public static event Action _onSoftLockTargetLost;
+		private Enemy oldTarget, oldTarget2;
 
 		public bool IsStrongestTarget(Enemy target)
 		{
@@ -79,8 +85,8 @@ namespace Harris.Player.Combat
 		{
 			//return GetComponent<Sight>().FindNearestTarget() == target;
 
-			Transform t = target.gameObject.transform;
-			return GetComponent<PlayerController>().GetSensor<Sight>().FindNearestTarget() == t;
+			SensorTarget t = target.transform.gameObject.GetComponentInChildren<SensorTarget>();
+			return PlayerControllerInstance.Instance.GetSensor<Sight>().FindNearestTarget() == t;
  		}
 
 		private int getDefaultTargetPriority()
@@ -88,7 +94,7 @@ namespace Harris.Player.Combat
 			return defaultTargetPriority;
 		}
 
-		private void calculateTargetPriority(Enemy target)
+		private void calculateTargetPriority(Enemy target, bool longRange)
 		{
 
 			target.setPriority(getDefaultTargetPriority());
@@ -96,28 +102,47 @@ namespace Harris.Player.Combat
 			//Do a Linq-Query to sort the priorities in ascending order
 			var sortedPriorities = from entry in priorities orderby entry.Value ascending select entry;
 
+			float looseTargetDistance = longRange ? 6 : 0;
+			float senseTargetDistance = longRange ? 10 : 3;
+
 			foreach (KeyValuePair<PriorityCondition,int> p in sortedPriorities)
 			{
 				//What should happen if more than 1 condition is true for the target?
 				//lets assume the strongest target is also the nearest target,
 				//then its final priority would be 2 and not 1, which is wrong behaviour
 				PriorityCondition pCondition = p.Key;
-				if(pCondition(target) && getAngleToTarget(target) < 45)
+
+				float distanceToTarget  = Vector3.Distance(PlayerControllerInstance.Instance.transform.position, target.transform.position);
+
+				if(pCondition(target) && getHeadAngleToBody() < 45)
 				{
-					//target.setPriority(sortedPriorities[pCondition]);
-					target.setPriority(priorities[pCondition]);
-					return;
+					//if(!PlayerControllerInstance.Instance.ResettingHeadRotation || target != oldTarget)
+
+					if(distanceToTarget > looseTargetDistance && distanceToTarget < senseTargetDistance)
+					{
+						if(!PlayerControllerInstance.Instance.ResettingHeadRotation || target != oldTarget2)
+						{
+							Debug.Log("oldtarget = " + oldTarget2 + ", target = " + target);
+							target.setPriority(priorities[pCondition]);
+							return;
+						}
+					}
 				}
 			}
-
 		}
 
-		private float getAngleToTarget(Enemy target)
+		private float getHeadAngleToTarget(Enemy target)
 		{
 			var directionToTargetXZ = target.transform.position - PlayerControllerInstance.Instance.HeadTransform.position;
 				directionToTargetXZ.y = 0;
 
+			Debug.Log("head angle to target = " +  Vector3.Angle(PlayerControllerInstance.Instance.HeadTransform.forward, directionToTargetXZ));
 			return Vector3.Angle(PlayerControllerInstance.Instance.HeadTransform.forward, directionToTargetXZ);
+		}
+
+		private float getHeadAngleToBody()
+		{
+			return Vector3.Angle(PlayerControllerInstance.Instance.HeadTransform.forward, PlayerControllerInstance.Instance.BodyTransform.forward);
 		}
 
 		private void Awake()
@@ -130,36 +155,28 @@ namespace Harris.Player.Combat
 
 			CombatInterface._requestStrongestTargetPriority += sendStrongestTargetPriority;
 			CombatInterface._requestNearestTargetPriority += sendNearestTargetPriority;
-
-			//UIEventListener._onStrongestTargetPriorityChanged += handleStrongestTargetPriorityChanged;
-			//UIEventListener._onNearestTargetPriorityChanged += handleNearestTargetPriorityChanged;
 		}
 
 		private void Start()
 		{
 			//Set the priorities for each priority condition
 			//they MUST be added in the order from highest priority to lowest priority
-			//priorities.Add(IsStrongestTarget, 1);
-			//priorities.Add(IsNearestTarget, 2);
 
-			//Sorted => priority = 1
-			//Unsorted => priority = 2(false)
 			priorities.Add(IsNearestTarget, nearestTargetPriority);
 			priorities.Add(IsStrongestTarget, strongestTargetPriority);
-			//PlayerController.Instance.GetSensor<Sight>()._onTargetDetected += AddTarget;
-			//PlayerController.Instance.GetSensor<Sight>()._onTargetLost += RemoveTarget;
 	
 		}
 
 		private void handleStrongestTargetPriorityChanged(int newPriority)
 		{
+			Debug.Log("new strongest target priority = " + newPriority);
 			strongestTargetPriority = newPriority;
 			priorities[IsStrongestTarget] = strongestTargetPriority;
-			//Debug.Log("strongest target priority = " + newPriority);
 		}
 
 		private void handleNearestTargetPriorityChanged(int newPriority)
 		{
+			Debug.Log("new nearest target priority = " + newPriority);
 			nearestTargetPriority = newPriority;
 			priorities[IsNearestTarget] = nearestTargetPriority;
 		}
@@ -174,13 +191,13 @@ namespace Harris.Player.Combat
 			CombatInterface.Instance.NearestTargetPriority = nearestTargetPriority;
 		}
 
-		private void calculateTargetPriorities()
+		private void calculateTargetPriorities(bool longRange)
 		{
 			//foreach(Enemy target in sensorTargets)
-			foreach(SensorTarget target in PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed)
+			foreach(var target in PlayerControllerInstance.Instance.LongRangeSight.GetComponent<Sight>().TargetsSensed)
 			{
 				var enemy = target.transform.parent.GetComponent<Enemy>();
-				calculateTargetPriority(enemy);
+				calculateTargetPriority(enemy, longRange);
 				Debug.Log("Target " + enemy.transform.gameObject.name + " has priority: " + enemy.TargetPriority);
 			}
 		}
@@ -192,13 +209,13 @@ namespace Harris.Player.Combat
 			//To store targets with same priority
 			var arr = new List<Enemy>();
 
-			if(PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed.Count == 0)
+			if(PlayerControllerInstance.Instance.LongRangeSight.GetComponent<Sight>().TargetsSensed.Count == 0)
 				return null;
 
 			while(arr.Count == 0)
 			{
 				currentPriority++;
-				foreach(var target in PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed)
+				foreach(var target in PlayerControllerInstance.Instance.LongRangeSight.GetComponent<Sight>().TargetsSensed)
 				{
 					var enemy = target.transform.parent.GetComponent<Enemy>();
 					if(enemy.TargetPriority == currentPriority)
@@ -217,7 +234,7 @@ namespace Harris.Player.Combat
 				}
 
 				//more than 1 target has the highest priority, so return a random target with highest priority
-				int randIndex = Random.Range(0, arr.Count);
+				int randIndex = UnityEngine.Random.Range(0, arr.Count);
 				return arr[randIndex];
 			}
 			return null;
@@ -227,40 +244,56 @@ namespace Harris.Player.Combat
 		
 		public void Update()
 		{
-			//Debug.Log("there are " + sensorTargets.Count + " targets!");
-			/*if (Input.GetKeyDown(KeyCode.Tab) && sensorTargets.Count > 0)
-			{
-				enableTargetChoosing = !enableTargetChoosing;
-			}*/
-
-			/*if(sensorTargets.Count == 0)
-			{
-				//enableTargetChoosing = false;
-				chosenTarget = null;
-			}
-			else
-			{
-				enableTargetChoosing = true;
-			}*/
 
 			if(enableTargetChoosing)
 			{
 				Debug.Log("target choosing enabled...");
-			
+
 				timer += Time.deltaTime;
+				//var oldTarget = chosenTarget;
+				oldTarget = chosenTarget;
+
+				if(chosenTarget != null)
+					oldTarget2 = chosenTarget;
+
 				if(timer > interval)
 				{
-					calculateTargetPriorities();
+					if (PlayerControllerInstance.Instance.CurrentWeapon is LongRangeWeapon)
+					{
+						calculateTargetPriorities(true);
+					}
+					else
+					{
+						calculateTargetPriorities(false);
+						
+					}
+
 					chosenTarget = chooseTarget();
 
-					if(chosenTarget == null)
-						Debug.Log("chosen target is null!");
-					else
-						Debug.Log("chosen target is: " + chosenTarget);		
+					Debug.Log("chosen target is: " + chosenTarget);
+
+					if(chosenTarget != oldTarget)
+					{
+						if(chosenTarget != null)
+						{
+
+							if(oldTarget != null)
+								oldTarget.HighLight.enabled = false;
+							
+							chosenTarget.HighLight.enabled = true;
+
+							_onSoftLockTargetChanged?.Invoke(oldTarget, chosenTarget);
+						}
+						else
+						{
+							_onSoftLockTargetLost?.Invoke();
+						}
+
+					}
+
 					timer = 0f;
 				}
 			}
-
 			else
 			{
 				chosenTarget = null;

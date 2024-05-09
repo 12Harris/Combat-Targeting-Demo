@@ -11,10 +11,13 @@ namespace Harris.Util
     public class RotateObject : MonoBehaviour
     {
         //float lerpDuration = 0.5f;
-        bool rotating;
+        private bool rotating = false;
+        public bool IsRotating => rotating;
 
         public event Action _onStartRotation;
         public event Action _onStopRotation;
+        private bool interrupt;
+        public bool Interrupt{get => interrupt; set => interrupt = value;}
 
         void Update()
         {
@@ -27,22 +30,28 @@ namespace Harris.Util
         public IEnumerator Rotate(float angle, float lerpDuration = 0.5f)
         {
             rotating = true;
+            interrupt = false;
+
             float timeElapsed = 0;
             Quaternion startRotation = transform.rotation;
             Quaternion targetRotation = transform.rotation * Quaternion.Euler(0, angle, 0);
             
             _onStartRotation?.Invoke();
 
-            while (timeElapsed < lerpDuration)
+            while (timeElapsed < lerpDuration && !interrupt)
             {
                 transform.rotation = Quaternion.Slerp(startRotation, targetRotation, timeElapsed / lerpDuration);
                 timeElapsed += Time.deltaTime;
                 yield return null;
             }
-            transform.rotation = targetRotation;
-            rotating = false;
 
-            _onStopRotation?.Invoke();
+            if(!interrupt)
+            {
+                transform.rotation = targetRotation;
+                _onStopRotation?.Invoke();
+            }
+
+            rotating = false;
         }
     }
 }

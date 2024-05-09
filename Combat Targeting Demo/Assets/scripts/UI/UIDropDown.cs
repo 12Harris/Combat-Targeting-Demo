@@ -36,6 +36,8 @@ namespace Harris.UI
 		public virtual void Update()
 		{
 			currentValue = (int)dropDown.value;
+
+			Debug.Log("UI drop down current value = " + currentValue);
 			// do something with turquoise
 			//PlayerMovement.instance.JumpForce = slider.value;
 		}

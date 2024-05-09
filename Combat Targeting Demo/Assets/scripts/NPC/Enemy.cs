@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace Harris.NPC
 {
+    using UnityEngine.UI;
+
     public class Enemy : MonoBehaviour
     {
         [SerializeField]
@@ -13,11 +15,16 @@ namespace Harris.NPC
         private int targetPriority;
         public int TargetPriority => targetPriority;
 
+        [SerializeField]
+        private Image highLight;
+
+        public Image HighLight => highLight;
+
         // Start is called before the first frame update
         void Start()
         {
-        
-        }
+            HighLight.enabled = false;
+        }   
 
         // Update is called once per frame
         void Update()
