@@ -18,10 +18,10 @@ namespace Harris.UI
 
 		private void handleSoftLockModeChanged(SoftLockMode newSoftLockMode)
 		{
-            if(newSoftLockMode == SoftLockMode.MOUSE)
+            /*if(newSoftLockMode == SoftLockMode.MOUSE)
 			    TextMesh.text = "Mouse Targeting Activated";
             else
-                TextMesh.text = "Priority Targeting Activated";
+                TextMesh.text = "Priority Targeting Activated";*/
 		}
 
 	}

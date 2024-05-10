@@ -51,9 +51,10 @@ namespace Harris.Player.Combat
 
 		private void handleHardLockEnabled()
 		{
-			if(SoftLock.Instance.SoftLockTarget != null)
+			//if(SoftLock.Instance.SoftLockTarget != null)
+			if(true)
 			{
-				hardlockTarget = SoftLock.Instance.SoftLockTarget;
+				//hardlockTarget = SoftLock.Instance.SoftLockTarget;
 				_onHardLockTargetChanged?.Invoke();
 				hardlockTarget.transform.parent.Find("Highlight").gameObject.transform.Find("Image").gameObject.GetComponent<Image>().enabled = true;	
 			}

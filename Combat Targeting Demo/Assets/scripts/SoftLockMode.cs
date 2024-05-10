@@ -6,7 +6,7 @@ namespace Harris
 {
     public enum SoftLockMode
 	{
-		PRIORITY,
-		MOUSE,
+		SHORTRANGE,
+		LONGRANGE,
 	}
 }

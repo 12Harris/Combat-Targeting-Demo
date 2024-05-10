@@ -6,6 +6,8 @@ using System;
 namespace Harris.Player.PlayerLocomotion
 {
     using Harris.Util;
+    using Harris.Perception;
+    using Harris.Player.Combat;
     using System.Collections;
 
     public class TurnState:PlayerMovementState
@@ -47,6 +49,13 @@ namespace Harris.Player.PlayerLocomotion
         {   
 
             base.Enter();
+
+            //Decactivate the sight temporarily so we dont get distracted by nearby enemies
+            TargetChooser.Instance.ChosenTarget = null;
+            TargetChooser.Instance.OldTarget = null;
+            TargetChooser.Instance.enabled = false;
+            PlayerControllerInstance.Instance.LockOnCurrentTarget = false;
+            //PlayerControllerInstance.Instance.GetSensor<Sight>().enabled = false;
             moving = false;
             idle = false;
             RB.velocity = Vector3.zero;
@@ -58,6 +67,12 @@ namespace Harris.Player.PlayerLocomotion
             //roate the head of the player
             playerHeadRotator.StartCoroutine(playerHeadRotator.Rotate(TurnAngle+deltaAngle,0.25f));
         
+        }
+
+        public override void Exit()
+        {   
+            //Activate Target Choosing again
+           TargetChooser.Instance.enabled = true;
         }
 
         public override void Tick(in float deltaTime)

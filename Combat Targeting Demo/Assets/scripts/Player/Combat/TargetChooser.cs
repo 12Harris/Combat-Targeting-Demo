@@ -34,7 +34,7 @@ namespace Harris.Player.Combat
 
 		private Enemy chosenTarget = null;
 
-		public Enemy ChosenTarget => chosenTarget;
+		public Enemy ChosenTarget {get => chosenTarget; set => chosenTarget = value;}
 
 		[SerializeField]
 		private int strongestTargetPriority;
@@ -59,6 +59,12 @@ namespace Harris.Player.Combat
 		public static event Action<Enemy, Enemy> _onSoftLockTargetChanged;
 		public static event Action _onSoftLockTargetLost;
 		private Enemy oldTarget, oldTarget2;
+		
+		public Enemy OldTarget{get => oldTarget; set => oldTarget = value;}
+		public Enemy OldTarget2 => oldTarget2;
+
+		private SoftLockMode softLockMode = SoftLockMode.LONGRANGE;
+		public SoftLockMode SoftLockMode => softLockMode;
 
 		public bool IsStrongestTarget(Enemy target)
 		{
@@ -194,7 +200,7 @@ namespace Harris.Player.Combat
 		private void calculateTargetPriorities(bool longRange)
 		{
 			//foreach(Enemy target in sensorTargets)
-			foreach(var target in PlayerControllerInstance.Instance.LongRangeSight.GetComponent<Sight>().TargetsSensed)
+			foreach(var target in PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed)
 			{
 				var enemy = target.transform.parent.GetComponent<Enemy>();
 				calculateTargetPriority(enemy, longRange);
@@ -209,13 +215,13 @@ namespace Harris.Player.Combat
 			//To store targets with same priority
 			var arr = new List<Enemy>();
 
-			if(PlayerControllerInstance.Instance.LongRangeSight.GetComponent<Sight>().TargetsSensed.Count == 0)
+			if(PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed.Count == 0)
 				return null;
 
 			while(arr.Count == 0)
 			{
 				currentPriority++;
-				foreach(var target in PlayerControllerInstance.Instance.LongRangeSight.GetComponent<Sight>().TargetsSensed)
+				foreach(var target in PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed)
 				{
 					var enemy = target.transform.parent.GetComponent<Enemy>();
 					if(enemy.TargetPriority == currentPriority)
@@ -260,12 +266,13 @@ namespace Harris.Player.Combat
 				{
 					if (PlayerControllerInstance.Instance.CurrentWeapon is LongRangeWeapon)
 					{
+						softLockMode = SoftLockMode.LONGRANGE;
 						calculateTargetPriorities(true);
 					}
 					else
 					{
-						calculateTargetPriorities(false);
-						
+						softLockMode = SoftLockMode.SHORTRANGE;
+						calculateTargetPriorities(false);						
 					}
 
 					chosenTarget = chooseTarget();
@@ -286,6 +293,7 @@ namespace Harris.Player.Combat
 						}
 						else
 						{
+							Debug.Log("TARGET LOST(TC)");
 							_onSoftLockTargetLost?.Invoke();
 						}
 

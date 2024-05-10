@@ -5,7 +5,7 @@ namespace Harris.Player
     using UnityEngine;
     using Harris.Perception;
     using Harris.Player.Combat;
-    
+
     // BEGIN mouse_look
     // Implements mouse-look. Horizontal mouse movement rotates the body around
     // the Y axis, while vertical mouse movement rotates the head around the X
@@ -42,11 +42,6 @@ namespace Harris.Player
 
         [SerializeField]
         private Transform head;
-
-        private void Awake()
-        {
-            SoftLock._onSoftLockTargetChanged += handleSoftLockTargetChanged;
-        }
 
         private void handleSoftLockTargetChanged(SensorTarget newTarget)
         {

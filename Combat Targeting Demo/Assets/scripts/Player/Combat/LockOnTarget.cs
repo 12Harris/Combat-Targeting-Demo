@@ -34,7 +34,7 @@ namespace Harris.Player.Combat
 			// init logic
             //HardLock.Instance.enabled = false;
             HardLock.Instance.enabled = true;
-            SoftLock.Instance.enabled = true;
+            //SoftLock.Instance.enabled = true;
 		}
 
         private void handleThrowAnimationStopped()
@@ -52,7 +52,7 @@ namespace Harris.Player.Combat
                 Debug.Log("hard lock deleted!(makes sense)");
 			HardLock.Instance.HardLockTarget = null;
 			_onHardLockTargetLost?.Invoke();
-            SoftLock.Instance.enabled = true;
+            //SoftLock.Instance.enabled = true;
             toggleMode = false;
 		}
 
@@ -61,7 +61,7 @@ namespace Harris.Player.Combat
 			// do something with turquoise
             if (Input.GetKeyDown(KeyCode.Y))
 			{
-                if( HardLock.Instance.HardLockTarget == null && SoftLock.Instance.SoftLockTarget == null)
+                if( HardLock.Instance.HardLockTarget == null) //&& SoftLock.Instance.SoftLockTarget == null)
                 {
                     return;
                 }
@@ -74,7 +74,7 @@ namespace Harris.Player.Combat
                 if(toggleMode)
                 {
                     cancelingHardLockTarget = false;
-                    SoftLock.Instance.enabled = false;
+                    //SoftLock.Instance.enabled = false;
                     //HardLock.Instance.enabled = true;
                     _onHardLockEnabled?.Invoke();
                     _onSoftLockDisabled?.Invoke();
@@ -82,7 +82,7 @@ namespace Harris.Player.Combat
                 else
                 {
                     Debug.Log("soft lock enabled!");
-                    SoftLock.Instance.enabled = true;
+                    //SoftLock.Instance.enabled = true;
                     _onSoftLockEnabled?.Invoke();
                     //HardLock.Instance.enabled = false;
                     _onHardLockDisabled?.Invoke();

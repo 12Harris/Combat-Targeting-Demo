@@ -40,11 +40,13 @@ namespace Harris.Player
 		public Transform LongRangeSight => longRangeSight;
 
 		private bool lockOnCurrentTarget = false;
-
+		public bool LockOnCurrentTarget {get => lockOnCurrentTarget; set => lockOnCurrentTarget = value;}
 		private bool resettingHeadRotation;
 		public bool ResettingHeadRotation => resettingHeadRotation;
 
 		private bool startRotateToNewTarget = false;
+
+		private bool switchingSoftLockTarget;
 		private float angleToTarget;
 
 		private RotateObject headRotator;
@@ -61,6 +63,7 @@ namespace Harris.Player
 			TargetChooser._onSoftLockTargetChanged += handleSoftLockTargetChanged;
 			TargetChooser._onSoftLockTargetLost += handleSoftLockTargetLost;
 			headTransform.gameObject.GetComponent<RotateObject>()._onStopRotation += tryBeginLockOnCurrentTarget;
+			headTransform.gameObject.GetComponent<RotateObject>()._onStopRotation += msgRotationStopped;
 		}
 
 		private void Start()
@@ -68,9 +71,15 @@ namespace Harris.Player
 			headRotator = headTransform.gameObject.GetComponent<RotateObject>();
 		}
 
+		private void msgRotationStopped()
+		{
+			Debug.Log("head rotation completed!");
+		}
+
 		private void tryBeginLockOnCurrentTarget()
 		{
-			if(TargetChooser.Instance.ChosenTarget != null && !resettingHeadRotation)
+			//if(TargetChooser.Instance.ChosenTarget != null && !resettingHeadRotation)
+			if(TargetChooser.Instance.ChosenTarget != null)
 			{
 				Debug.Log("LOCK ON TARGET!");
 				lockOnCurrentTarget = true;
@@ -82,58 +91,59 @@ namespace Harris.Player
 			//return GetFirstExact<T, Sensor>(ref _sensors);
 			return GOComponents.GetFirstExact<T, Sensor>(gameObject, ref _sensors);
 		}
-
-		private void handleSoftLockTargetChanged(Enemy oldTarget, Enemy newTarget)
+		private float getAngleToTarget(Enemy target)
 		{
-			resettingHeadRotation = false;
+			var angle= 0f;
 
 			var headTransformForwardXZ = headTransform.forward;
 			headTransformForwardXZ.y = 0;
 
-			var dirToTargetXZ = newTarget.transform.position - headTransform.position;
+			var dirToTargetXZ = target.transform.position - headTransform.position;
 			dirToTargetXZ.y = 0;
 
-			angleToTarget = Vector3.Angle(headTransformForwardXZ, dirToTargetXZ);
-			var headRotator = headTransform.gameObject.GetComponent<RotateObject>();
+			angle= Vector3.Angle(headTransformForwardXZ, dirToTargetXZ);
 
 			//Does the head need to turn left or right?
-			LeftRightTest lrTest = new LeftRightTest(headTransform, newTarget.transform);
+			LeftRightTest lrTest = new LeftRightTest(headTransform, target.transform);
 
 			if (lrTest.targetIsLeft())
-				angleToTarget *=-1;
+				angle *=-1;
+			
+			return angle;
+		}
 
-			if(headRotator.IsRotating)
+		private void handleSoftLockTargetChanged(Enemy oldTarget, Enemy newTarget)
+		{
+			//resettingHeadRotation = false;
+
+			switchingSoftLockTarget = true;
+
+			if(!headRotator.IsRotating)
 			{
-				Debug.Log("stop rotating!(new target = )" + newTarget);
-				headRotator.Interrupt = true;
+				angleToTarget = getAngleToTarget(newTarget);
+				StartCoroutine(headRotator.Rotate(angleToTarget,1f));
 			}
-
-			startRotateToNewTarget = true;
-
-			//StartCoroutine(headRotator.Rotate(angleToTarget,1f));
 
 			lockOnCurrentTarget = false;
 		}
 
-		private IEnumerator RotateHeadAfter(float delay, float rotationAngle)
-		{
-			yield return new WaitForSeconds(delay);
-			var headRotator = headTransform.gameObject.GetComponent<RotateObject>();
-			StartCoroutine(headRotator.Rotate(rotationAngle,1f));
-		}
 
 		private void handleSoftLockTargetLost()
 		{
+			Debug.Log("target was lost!!!");
 			resettingHeadRotation = true;
 
 			var rotationAngle = Vector3.Angle(headTransform.forward, bodyTransform.forward);
-			var headRotator = headTransform.gameObject.GetComponent<RotateObject>();
 
 			//Does the head need to turn left or right?
-			LeftRightTest lrTest = new LeftRightTest(headTransform, bodyTransform);
+			//LeftRightTest lrTest = new LeftRightTest(headTransform, bodyTransform);
 
-			if (lrTest.targetIsLeft())
+			LeftRightTest lrTest = new LeftRightTest(bodyTransform,TargetChooser.Instance.OldTarget2.transform);
+
+			if (!lrTest.targetIsLeft())
+			{
 				rotationAngle *=-1;
+			}
 
 			lockOnCurrentTarget = false;
 
@@ -143,13 +153,34 @@ namespace Harris.Player
 		private void Update()
 		{
 			if(lockOnCurrentTarget)
-				headTransform.LookAt(TargetChooser.Instance.ChosenTarget.transform);
-
-			if(!headRotator.IsRotating && startRotateToNewTarget)
 			{
-				Debug.Log("start rotate to new target!");
+				var v = TargetChooser.Instance.ChosenTarget.transform.position;
+				v.y = headTransform.position.y;
+				headTransform.LookAt(v);
+			}
+			else
+			{
+				Debug.Log("lock on = false!");
+			}
+
+			//if(!headRotator.IsRotating && startRotateToNewTarget)
+			if(switchingSoftLockTarget)
+			{
+				if(resettingHeadRotation && headRotator.IsRotating)
+				{
+					headRotator.Interrupt = true;
+				}
+				else
+				{
+					angleToTarget = getAngleToTarget(TargetChooser.Instance.ChosenTarget);
+					StartCoroutine(headRotator.Rotate(angleToTarget,1f));
+					switchingSoftLockTarget = false;
+					resettingHeadRotation = false;
+				}
+
+				/*Debug.Log("start rotate to new target!");
 				StartCoroutine(headRotator.Rotate(angleToTarget,1f));
-				startRotateToNewTarget = false;
+				startRotateToNewTarget = false;*/
 			}
 		}
 	}

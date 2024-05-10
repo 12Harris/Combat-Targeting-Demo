@@ -16,7 +16,7 @@ namespace Harris.Util
 
         public event Action _onStartRotation;
         public event Action _onStopRotation;
-        private bool interrupt;
+        private bool interrupt = false;
         public bool Interrupt{get => interrupt; set => interrupt = value;}
 
         void Update()
@@ -38,17 +38,28 @@ namespace Harris.Util
             
             _onStartRotation?.Invoke();
 
-            while (timeElapsed < lerpDuration && !interrupt)
+            while (timeElapsed < lerpDuration && interrupt == false)
             {
                 transform.rotation = Quaternion.Slerp(startRotation, targetRotation, timeElapsed / lerpDuration);
                 timeElapsed += Time.deltaTime;
+
+                //yield return null;
+
+                if(interrupt)
+                {
+                    //Debug.Log("rotation was interrupted!");
+                }
                 yield return null;
             }
 
-            if(!interrupt)
+            if(interrupt == false)
             {
                 transform.rotation = targetRotation;
                 _onStopRotation?.Invoke();
+            }
+            else
+            {
+                Debug.Log("rotation was interrupted!");
             }
 
             rotating = false;
