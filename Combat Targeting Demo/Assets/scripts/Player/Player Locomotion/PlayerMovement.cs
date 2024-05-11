@@ -5,6 +5,8 @@ using UnityEngine;
 namespace Harris.Player.PlayerLocomotion
 {
     using Harris.Util;
+    using Harris.NPC;
+    using Harris.Player.Combat;
 
     public enum PlayerDirection
     {
@@ -20,6 +22,7 @@ namespace Harris.Player.PlayerLocomotion
         public Rigidbody RB => rb;  
 
         protected float groundSpeed = 5f;
+        protected float strafeSpeed = 2f;
 
         protected float groundDeceleration = 0.9f;
 
@@ -37,7 +40,8 @@ namespace Harris.Player.PlayerLocomotion
 
         public PlayerMovementState(PlayerMovement _playerMovement)
         {
-            rb = PlayerControllerInstance.Instance.transform.GetComponentInChildren<Rigidbody>();
+            //rb = PlayerControllerInstance.Instance.transform.GetComponentInChildren<Rigidbody>();
+            rb = PlayerControllerInstance.Instance.transform.GetComponent<Rigidbody>();
             playerMovement = _playerMovement;
         }
 
@@ -226,31 +230,62 @@ namespace Harris.Player.PlayerLocomotion
         private IdleState idleState;
         private TurnState turnState;
         private MoveState moveState;
+        private EncircleTargetState encircleTargetState ;
 
         public IdleState IdleState => idleState;
         public TurnState TurnState => turnState;
         public MoveState MoveState => moveState;
 
+        private bool encircleTarget;
+
+        public bool EncircleTarget => encircleTarget;
+
         void Awake()
         {
+
+            TargetChooser._onSoftLockTargetChanged += handleSoftLockTargetChanged;
+			TargetChooser._onSoftLockTargetLost += handleSoftLockTargetLost;
 
 			idleState = new IdleState(this);//zooming takes place in idle state
             turnState = new TurnState(this);
 			moveState = new MoveState(this);
-;
+            encircleTargetState = new EncircleTargetState(this);
+
 			int index1 = playerMovementFSM.AddState(idleState);
 			int index2 = playerMovementFSM.AddState(turnState);
 			int index3 = playerMovementFSM.AddState(moveState);
+            int index4 = playerMovementFSM.AddState(encircleTargetState);
 
-            playerMovementFSM.AddTransition(index1, index2, idleState.GetExitGuard("Turning"));
+
+            //First calculate rotation angle in turn state => enter
+            playerMovementFSM.AddTransition(index1, index2, idleState.GetExitGuard("Turning"));//(also towards near target)
             playerMovementFSM.AddTransition(index1, index3, idleState.GetExitGuard("Moving"));
+
             playerMovementFSM.AddTransition(index2, index1, turnState.GetExitGuard("Idle"));
             playerMovementFSM.AddTransition(index2, index3, turnState.GetExitGuard("Moving"));
+            playerMovementFSM.AddTransition(index2, index4, turnState.GetExitGuard("EncircleTarget"));//turn state => encircleTarget state
+
             playerMovementFSM.AddTransition(index3, index1, moveState.GetExitGuard("Idle"));
-			playerMovementFSM.AddTransition(index3, index2, moveState.GetExitGuard("Turning"));
-			//switch from switchtarget to zoom_lookat
+			playerMovementFSM.AddTransition(index3, index2, moveState.GetExitGuard("Turning"));//(also towards near target)
+
+			playerMovementFSM.AddTransition(index4, index2, encircleTargetState.GetExitGuard("Turning"));
+
 
 			idleState.Enter();
+        }
+
+        private void handleSoftLockTargetChanged(Enemy oldEnemy, Enemy newEnemy)
+        {
+            if(TargetChooser.Instance.SoftLockMode == SoftLockMode.SHORTRANGE)
+            {
+                encircleTarget = true;
+            }
+        }
+
+        private void handleSoftLockTargetLost()
+        {
+            if(TargetChooser.Instance.SoftLockMode == SoftLockMode.SHORTRANGE)
+                encircleTarget = false;
         }
 
         // Start is called before the first frame update
@@ -281,6 +316,8 @@ namespace Harris.Player.PlayerLocomotion
             Debug.Log("player direction = " + PlayerMovementState.PlayerDirection);
 
             playerMovementFSM.Tick(Time.deltaTime);
+
+            
         }
 
         void LateUpdate()

@@ -282,6 +282,7 @@ namespace Harris.Perception
 						}
 					}
 
+					Debug.Log("parent = " + hit.collider.transform.parent);
 					Debug.Log("Ray hit: " + hit.collider.transform.gameObject);
 
 					// Visualise the ray.

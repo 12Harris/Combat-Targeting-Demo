@@ -31,14 +31,6 @@ namespace Harris.Player
 		private Transform bodyTransform;
 		public Transform BodyTransform => bodyTransform;
 
-		[SerializeField]
-		private Transform shortRangeSight;
-		public Transform ShortRangeSight => shortRangeSight;
-
-		[SerializeField]
-		private Transform longRangeSight;
-		public Transform LongRangeSight => longRangeSight;
-
 		private bool lockOnCurrentTarget = false;
 		public bool LockOnCurrentTarget {get => lockOnCurrentTarget; set => lockOnCurrentTarget = value;}
 		private bool resettingHeadRotation;
@@ -51,10 +43,18 @@ namespace Harris.Player
 
 		private RotateObject headRotator;
 
+		public RotateObject HeadRotator => headRotator;
+		private RotateObject bodyRotator;
+
+		public RotateObject BodyRotator => bodyRotator;
+
 		[SerializeField]
 		private Weapon currentWeapon;
 
 		public Weapon CurrentWeapon => currentWeapon;
+
+		[SerializeField]
+		private LongRangeSoftLock longRangeSoftLock;
 
 		private void Awake()
 		{
@@ -62,36 +62,21 @@ namespace Harris.Player
 			//SoftLock._onSoftLockTargetChanged += handleSoftLockTargetChanged;
 			TargetChooser._onSoftLockTargetChanged += handleSoftLockTargetChanged;
 			TargetChooser._onSoftLockTargetLost += handleSoftLockTargetLost;
-			headTransform.gameObject.GetComponent<RotateObject>()._onStopRotation += tryBeginLockOnCurrentTarget;
-			headTransform.gameObject.GetComponent<RotateObject>()._onStopRotation += msgRotationStopped;
 		}
 
 		private void Start()
 		{
 			headRotator = headTransform.gameObject.GetComponent<RotateObject>();
+			bodyRotator = bodyTransform.gameObject.GetComponent<RotateObject>();
 		}
 
-		private void msgRotationStopped()
-		{
-			Debug.Log("head rotation completed!");
-		}
-
-		private void tryBeginLockOnCurrentTarget()
-		{
-			//if(TargetChooser.Instance.ChosenTarget != null && !resettingHeadRotation)
-			if(TargetChooser.Instance.ChosenTarget != null)
-			{
-				Debug.Log("LOCK ON TARGET!");
-				lockOnCurrentTarget = true;
-			}
-		}
 
 		public T GetSensor<T>() where T : Sensor
 		{
 			//return GetFirstExact<T, Sensor>(ref _sensors);
 			return GOComponents.GetFirstExact<T, Sensor>(gameObject, ref _sensors);
 		}
-		private float getAngleToTarget(Enemy target)
+		public float getAngleToTarget(Enemy target)
 		{
 			var angle= 0f;
 
@@ -114,73 +99,25 @@ namespace Harris.Player
 
 		private void handleSoftLockTargetChanged(Enemy oldTarget, Enemy newTarget)
 		{
-			//resettingHeadRotation = false;
 
-			switchingSoftLockTarget = true;
-
-			if(!headRotator.IsRotating)
-			{
-				angleToTarget = getAngleToTarget(newTarget);
-				StartCoroutine(headRotator.Rotate(angleToTarget,1f));
-			}
-
-			lockOnCurrentTarget = false;
 		}
 
 
 		private void handleSoftLockTargetLost()
 		{
-			Debug.Log("target was lost!!!");
-			resettingHeadRotation = true;
 
-			var rotationAngle = Vector3.Angle(headTransform.forward, bodyTransform.forward);
-
-			//Does the head need to turn left or right?
-			//LeftRightTest lrTest = new LeftRightTest(headTransform, bodyTransform);
-
-			LeftRightTest lrTest = new LeftRightTest(bodyTransform,TargetChooser.Instance.OldTarget2.transform);
-
-			if (!lrTest.targetIsLeft())
-			{
-				rotationAngle *=-1;
-			}
-
-			lockOnCurrentTarget = false;
-
-			StartCoroutine(headRotator.Rotate(rotationAngle,1f));
 		}
 
 		private void Update()
 		{
-			if(lockOnCurrentTarget)
+
+			if(TargetChooser.Instance.SoftLockMode == SoftLockMode.SHORTRANGE)
 			{
-				var v = TargetChooser.Instance.ChosenTarget.transform.position;
-				v.y = headTransform.position.y;
-				headTransform.LookAt(v);
+				longRangeSoftLock.enabled = false;
 			}
 			else
 			{
-				Debug.Log("lock on = false!");
-			}
-
-			//if(!headRotator.IsRotating && startRotateToNewTarget)
-			if(switchingSoftLockTarget)
-			{
-				if(resettingHeadRotation && headRotator.IsRotating)
-				{
-					headRotator.Interrupt = true;
-				}
-				else
-				{
-					angleToTarget = getAngleToTarget(TargetChooser.Instance.ChosenTarget);
-					StartCoroutine(headRotator.Rotate(angleToTarget,1f));
-					switchingSoftLockTarget = false;
-					resettingHeadRotation = false;
-				}
-
-				/*Debug.Log("start rotate to new target!");
-				StartCoroutine(headRotator.Rotate(angleToTarget,1f));
-				startRotateToNewTarget = false;*/
+				longRangeSoftLock.enabled = true;
 			}
 		}
 	}

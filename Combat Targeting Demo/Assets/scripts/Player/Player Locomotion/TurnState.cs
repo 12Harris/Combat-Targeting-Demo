@@ -15,6 +15,7 @@ namespace Harris.Player.PlayerLocomotion
         
         private bool moving;
         private bool idle;
+        private bool encircleTarget;
 
         private RotateObject playerBodyRotator;
         private RotateObject playerHeadRotator;
@@ -26,23 +27,36 @@ namespace Harris.Player.PlayerLocomotion
         {
             AddExitGuard("Moving", () => {return moving;});
             AddExitGuard("Idle", () => {return idle;});
+            AddExitGuard("EncircleTarget", () => {return encircleTarget;});
             playerHeadRotator = PlayerControllerInstance.Instance.HeadTransform.GetComponent<RotateObject>();
             playerBodyRotator = PlayerControllerInstance.Instance.BodyTransform.GetComponent<RotateObject>();
             playerBodyRotator._onStopRotation += handleTurnCompleted;
+            TargetChooser._onSoftLockTargetLost += handleTargetLost;
         }
 
         private void handleTurnCompleted()
         {
-            if(PlayerMovementState.Move2d != Vector2.zero)
+            if(PlayerMovement.EncircleTarget)
+            {
+                encircleTarget = true;
+            }
+            else if(PlayerMovementState.Move2d != Vector2.zero)
             {
                 moving = true;
-                Debug.Log("MOVING!!");
             }
             else
             {
+                Debug.Log("turnstate => idle");
                 idle = true;
-                Debug.Log("IDLE!!");
             }
+        }
+
+        private void handleTargetLost()
+        {
+            TargetChooser.Instance.ChosenTarget = null;
+            TargetChooser.Instance.OldTarget = null;
+            TargetChooser.Instance.enabled = false;
+            PlayerControllerInstance.Instance.LockOnCurrentTarget = false;
         }
 
         public override void Enter()
@@ -51,13 +65,9 @@ namespace Harris.Player.PlayerLocomotion
             base.Enter();
 
             //Decactivate the sight temporarily so we dont get distracted by nearby enemies
-            TargetChooser.Instance.ChosenTarget = null;
-            TargetChooser.Instance.OldTarget = null;
-            TargetChooser.Instance.enabled = false;
-            PlayerControllerInstance.Instance.LockOnCurrentTarget = false;
-            //PlayerControllerInstance.Instance.GetSensor<Sight>().enabled = false;
             moving = false;
             idle = false;
+            encircleTarget = false;
             RB.velocity = Vector3.zero;
             //Debug.Log("entering turn state!");
             //rotate the player
@@ -72,7 +82,8 @@ namespace Harris.Player.PlayerLocomotion
         public override void Exit()
         {   
             //Activate Target Choosing again
-           TargetChooser.Instance.enabled = true;
+            if(!TargetChooser.Instance.enabled)
+                TargetChooser.Instance.enabled = true;
         }
 
         public override void Tick(in float deltaTime)

@@ -5,6 +5,8 @@ using UnityEngine;
 namespace Harris.Player.PlayerLocomotion
 {
     using Harris.Util;
+    using Harris.NPC;
+    using Harris.Player.Combat;
 
     public class IdleState:PlayerMovementState
     {
@@ -19,6 +21,17 @@ namespace Harris.Player.PlayerLocomotion
         {
             AddExitGuard("Moving", () => {return moving;});
             AddExitGuard("Turning", () => {return turning;});
+            TargetChooser._onSoftLockTargetChanged += handleSoftLockTargetChanged;
+        }
+
+        private void handleSoftLockTargetChanged(Enemy oldTarget, Enemy newTarget)
+		{
+            if(TargetChooser.Instance.SoftLockMode == SoftLockMode.SHORTRANGE)
+            {
+                turning = true;
+                PlayerMovement.TurnState.TurnAngle = PlayerControllerInstance.Instance.getAngleToTarget(newTarget);
+            }
+
         }
 
         public override void Enter()

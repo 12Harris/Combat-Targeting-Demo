@@ -58,7 +58,7 @@ namespace Harris.Player.Combat
 
 		public static event Action<Enemy, Enemy> _onSoftLockTargetChanged;
 		public static event Action _onSoftLockTargetLost;
-		private Enemy oldTarget, oldTarget2;
+		private Enemy oldTarget = null, oldTarget2;
 		
 		public Enemy OldTarget{get => oldTarget; set => oldTarget = value;}
 		public Enemy OldTarget2 => oldTarget2;
@@ -118,13 +118,19 @@ namespace Harris.Player.Combat
 				//then its final priority would be 2 and not 1, which is wrong behaviour
 				PriorityCondition pCondition = p.Key;
 
-				float distanceToTarget  = Vector3.Distance(PlayerControllerInstance.Instance.transform.position, target.transform.position);
+				var v1 = PlayerControllerInstance.Instance.BodyTransform.position;
+				v1.y = 0;
+
+				var v2 = target.transform.position;
+				v2.y = 0;
+
+				float distanceToTargetXZ  = Vector3.Distance(v1,v2);
 
 				if(pCondition(target) && getHeadAngleToBody() < 45)
 				{
 					//if(!PlayerControllerInstance.Instance.ResettingHeadRotation || target != oldTarget)
 
-					if(distanceToTarget > looseTargetDistance && distanceToTarget < senseTargetDistance)
+					if(distanceToTargetXZ > looseTargetDistance && distanceToTargetXZ < senseTargetDistance)
 					{
 						if(!PlayerControllerInstance.Instance.ResettingHeadRotation || target != oldTarget2)
 						{
@@ -257,13 +263,19 @@ namespace Harris.Player.Combat
 
 				timer += Time.deltaTime;
 				//var oldTarget = chosenTarget;
-				oldTarget = chosenTarget;
+				/*oldTarget = chosenTarget;
 
 				if(chosenTarget != null)
-					oldTarget2 = chosenTarget;
+					oldTarget2 = chosenTarget;*/
 
 				if(timer > interval)
 				{
+
+					oldTarget = chosenTarget;
+
+					if(chosenTarget != null)
+						oldTarget2 = chosenTarget;
+
 					if (PlayerControllerInstance.Instance.CurrentWeapon is LongRangeWeapon)
 					{
 						softLockMode = SoftLockMode.LONGRANGE;
@@ -281,12 +293,11 @@ namespace Harris.Player.Combat
 
 					if(chosenTarget != oldTarget)
 					{
+						if(oldTarget != null)
+								oldTarget.HighLight.enabled = false;
+
 						if(chosenTarget != null)
 						{
-
-							if(oldTarget != null)
-								oldTarget.HighLight.enabled = false;
-							
 							chosenTarget.HighLight.enabled = true;
 
 							_onSoftLockTargetChanged?.Invoke(oldTarget, chosenTarget);
@@ -301,6 +312,26 @@ namespace Harris.Player.Combat
 
 					timer = 0f;
 				}
+
+				/*if(chosenTarget != oldTarget)
+				{
+					if(chosenTarget != null)
+					{
+
+						if(oldTarget != null)
+							oldTarget.HighLight.enabled = false;
+						
+						chosenTarget.HighLight.enabled = true;
+
+						_onSoftLockTargetChanged?.Invoke(oldTarget, chosenTarget);
+					}
+					else
+					{
+						Debug.Log("TARGET LOST(TC)");
+						_onSoftLockTargetLost?.Invoke();
+					}
+
+				}*/
 			}
 			else
 			{
