@@ -20,6 +20,18 @@ namespace Harris.AI
                                     {'w','w','w','w','w',' ',' ',' ','w','w'},
                                     {'w','w','w','w','w',' ','w','w','w','w'}};
 
+
+        /*private static char[,] map = {{'w','w','w','w','w','w','w','w','w','w'},
+                                    {'w','w','w','w','w','w','w','w','w','w'},
+                                    {'w','w','w','w','w','w','w','w','w','w'},
+                                    {'w','w','w','w','w','w','w','w','w','w'},
+                                    {'w','w','w','w','w','w','w','w','w','w'},
+                                    {'w','w','w','w','w','w','w','w','w','w'},
+                                    {'w','w','w','w','w','w','w','w','w','w'},
+                                    {'w','w','w','w','w','w','w','w','w','w'},
+                                    {'w','w','w','w','w','w','w','w','w','w'},
+                                    {'w','w','w','w','w','w','w','w','w','w'}};*/
+
         public static char[,] Map => map;
 
         private void Awake()

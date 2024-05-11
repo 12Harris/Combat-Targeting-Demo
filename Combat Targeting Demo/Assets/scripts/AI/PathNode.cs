@@ -16,11 +16,13 @@ namespace Harris.AI
         public int hCost;
         public int fCost;
 
+        public bool isWalkable;
         public PathNode cameFromNode;
         public PathNode(int x, int y)
         {
             this.x = x;
             this.y = y;
+            isWalkable = true;
         }
 
         public void calculateFCost()

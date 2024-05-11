@@ -63,6 +63,10 @@ namespace Harris.AI
                 foreach(PathNode neighbourNode in GetNeighbourList(currentNode))
                 {
                     if(closedList.Contains(neighbourNode)) continue;
+                    if(!neighbourNode.isWalkable){
+                        closedList.Add(neighbourNode);
+                        continue;
+                    }
 
                     int tentativeGCost = currentNode.gCost + CalculateDistanceCost(currentNode, neighbourNode);
                     if(tentativeGCost < neighbourNode.gCost)
@@ -82,6 +86,7 @@ namespace Harris.AI
 
 
             //out of nodes on the open list(we could not find a path)
+            Debug.Log("couldnt find a path!");
             return null;
 
         }
@@ -170,13 +175,11 @@ namespace Harris.AI
             {
                 for(int x = 0; x < GameMap.Map.GetLength(1);x++)
                 {
-                    if(GameMap.Map[y,x] == 'w')
+                    nodeMap[y,x] = new PathNode(x,y);
+      
+                    if(GameMap.Map[y,x] == ' ')
                     {
-                        nodeMap[y,x] = new PathNode(x,y);
-                    }
-                    else
-                    {
-                        nodeMap[y,x] = null;
+                        nodeMap[y,x].isWalkable = false;
                     }
                 }
             }
