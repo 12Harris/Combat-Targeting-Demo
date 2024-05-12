@@ -45,7 +45,7 @@ namespace Harris.Player.Combat
 			}
 		}
 
-		private void handleSoftLockTargetChanged(Enemy oldTarget, Enemy newTarget)
+		private void handleSoftLockTargetChanged(EnemyController oldTarget, EnemyController newTarget)
 		{
 			//resettingHeadRotation = false;
 			switchingSoftLockTarget = true;

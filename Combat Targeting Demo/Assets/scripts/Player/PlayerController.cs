@@ -76,7 +76,7 @@ namespace Harris.Player
 			//return GetFirstExact<T, Sensor>(ref _sensors);
 			return GOComponents.GetFirstExact<T, Sensor>(gameObject, ref _sensors);
 		}
-		public float getAngleToTarget(Enemy target)
+		public float getAngleToTarget(EnemyController target)
 		{
 			var angle= 0f;
 
@@ -97,7 +97,7 @@ namespace Harris.Player
 			return angle;
 		}
 
-		private void handleSoftLockTargetChanged(Enemy oldTarget, Enemy newTarget)
+		private void handleSoftLockTargetChanged(EnemyController oldTarget, EnemyController newTarget)
 		{
 
 		}

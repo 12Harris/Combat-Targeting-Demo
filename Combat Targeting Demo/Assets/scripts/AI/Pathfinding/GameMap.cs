@@ -6,9 +6,6 @@ namespace Harris.AI.PathFinding
 {
     public class GameMap : MonoBehaviour
     {
-        [SerializeField]
-        private GameObject mapTilePrefab;
-
         private static char[,] map = new char[10,10];
         /*private static char[,] map = {{'w','w','w','w','w','w',' ','w','w','w'},
                                     {'w','w',' ',' ',' ',' ',' ','w','w','w'},
@@ -23,6 +20,9 @@ namespace Harris.AI.PathFinding
 
 
         public static char[,] Map => map;
+
+        [SerializeField]
+        private LayerMask ignoreEnemies;
 
         private void Awake()
         {
@@ -53,7 +53,7 @@ namespace Harris.AI.PathFinding
                     
                     //Debug.DrawRay(new Vector3(x+0.5f,3,-y-0.5f), -Vector3.up*4, Color.red,10);
 
-                    if(Physics.Raycast(new Vector3(x+0.5f,3,-y-0.5f), -Vector3.up, out hit, 4))
+                    if(Physics.Raycast(new Vector3(x+0.5f,3,-y-0.5f), -Vector3.up, out hit, 4, ignoreEnemies))
                     {
                         //If the ray hit a maptile then add a 'w' entry in the map
                         if(hit.transform.gameObject.TryGetComponent<MapTile>(out MapTile mapTile))

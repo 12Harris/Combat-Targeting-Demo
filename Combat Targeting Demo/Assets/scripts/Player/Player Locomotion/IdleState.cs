@@ -24,7 +24,7 @@ namespace Harris.Player.PlayerLocomotion
             TargetChooser._onSoftLockTargetChanged += handleSoftLockTargetChanged;
         }
 
-        private void handleSoftLockTargetChanged(Enemy oldTarget, Enemy newTarget)
+        private void handleSoftLockTargetChanged(EnemyController oldTarget, EnemyController newTarget)
 		{
             if(TargetChooser.Instance.SoftLockMode == SoftLockMode.SHORTRANGE)
             {

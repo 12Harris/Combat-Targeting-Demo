@@ -31,10 +31,5 @@ namespace Harris.NPC
         {
         
         }
-
-        public void setPriority(int priority)
-        {
-            targetPriority = priority;
-        }
     }
 }

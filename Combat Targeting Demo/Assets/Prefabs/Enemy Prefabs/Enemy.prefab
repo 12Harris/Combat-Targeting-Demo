@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 152877363204964995}
   - component: {fileID: 5212983804388945674}
   - component: {fileID: 8330174092377816601}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: VisibilityPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -117,7 +117,7 @@ GameObject:
   - component: {fileID: 3670950415855905601}
   - component: {fileID: 932859384300725153}
   - component: {fileID: 6791521096145948446}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: VisibilityPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -220,7 +220,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7173903200701500986}
   - component: {fileID: 9120865377664055384}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: SensorTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -284,7 +284,7 @@ GameObject:
   - component: {fileID: 4059016071889419859}
   - component: {fileID: 7932799575438972210}
   - component: {fileID: 4327058493535080050}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: VisibilityPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -389,7 +389,7 @@ GameObject:
   - component: {fileID: 3890160093481277803}
   - component: {fileID: 1514056624454691288}
   - component: {fileID: 3972326086873341769}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -492,7 +492,7 @@ GameObject:
   - component: {fileID: 5395745897583321805}
   - component: {fileID: 2240953756826463511}
   - component: {fileID: 6864250633742174586}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: VisibilityPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -597,7 +597,7 @@ GameObject:
   - component: {fileID: 4960343623678986594}
   - component: {fileID: 2656458236291788740}
   - component: {fileID: 1081929879554574437}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: VisibilityPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -702,7 +702,7 @@ GameObject:
   - component: {fileID: 8992704356219827787}
   - component: {fileID: 1609454726389393362}
   - component: {fileID: 8705607672130358322}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: VisibilityPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -807,7 +807,7 @@ GameObject:
   - component: {fileID: 2226171376654141260}
   - component: {fileID: 5290995093976865274}
   - component: {fileID: 8473046683667939400}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: VisibilityPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -913,8 +913,11 @@ GameObject:
   - component: {fileID: 2486588076130965634}
   - component: {fileID: 9065763278974613161}
   - component: {fileID: 5489587528793289650}
-  - component: {fileID: 4498729545206200453}
-  m_Layer: 0
+  - component: {fileID: 3796734424780538451}
+  - component: {fileID: 5240042054911710684}
+  - component: {fileID: 6499199375835284074}
+  - component: {fileID: 7195532347909219097}
+  m_Layer: 3
   m_Name: Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1037,7 +1040,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 80
   m_CollisionDetection: 0
---- !u!114 &4498729545206200453
+--- !u!114 &3796734424780538451
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1046,11 +1049,49 @@ MonoBehaviour:
   m_GameObject: {fileID: 7817037433822999759}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c8da6969801d0a4da9d5ec6aa0ba0aa, type: 3}
+  m_Script: {fileID: 11500000, guid: fdb5e336cc123714f8c5dbd2864baaf5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _animator: {fileID: 0}
   strength: 3
   highLight: {fileID: 1881048158067639432}
+--- !u!114 &5240042054911710684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7817037433822999759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e384d8a99c72ddc41b11b141d8979aae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startWaypoint: {fileID: 0}
+--- !u!114 &6499199375835284074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7817037433822999759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5fb333207a8bca4f9b9ae695e5a7f74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &7195532347909219097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7817037433822999759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2f163bf052e9c3479d04aa950649ec6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7871677196199172949
 GameObject:
   m_ObjectHideFlags: 0
@@ -1060,7 +1101,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7363038121389642432}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Highlight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1094,7 +1135,7 @@ GameObject:
   - component: {fileID: 7245770494709762415}
   - component: {fileID: 7007952647268222581}
   - component: {fileID: 1881048158067639432}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1171,7 +1212,7 @@ GameObject:
   - component: {fileID: 3343502048331934770}
   - component: {fileID: 2552003825493541615}
   - component: {fileID: 5876299609003066723}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Visibility Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}

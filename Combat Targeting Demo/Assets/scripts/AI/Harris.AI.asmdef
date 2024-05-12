@@ -1,3 +1,16 @@
 {
-	"name": "Harris.AI"
+    "name": "Harris.AI",
+    "rootNamespace": "",
+    "references": [
+        "GUID:21e77774b254e9845865036f97ee3581"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

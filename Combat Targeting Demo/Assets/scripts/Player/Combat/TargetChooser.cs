@@ -28,13 +28,13 @@ namespace Harris.Player.Combat
 
 		public IDictionary<PriorityCondition, int> Priorities => priorities;
 
-		public delegate bool PriorityCondition(Enemy target);
+		public delegate bool PriorityCondition(EnemyController target);
 
 		private int defaultTargetPriority = 3;
 
-		private Enemy chosenTarget = null;
+		private EnemyController chosenTarget = null;
 
-		public Enemy ChosenTarget {get => chosenTarget; set => chosenTarget = value;}
+		public EnemyController ChosenTarget {get => chosenTarget; set => chosenTarget = value;}
 
 		[SerializeField]
 		private int strongestTargetPriority;
@@ -56,17 +56,17 @@ namespace Harris.Player.Combat
 
 		public static TargetChooser Instance;
 
-		public static event Action<Enemy, Enemy> _onSoftLockTargetChanged;
+		public static event Action<EnemyController, EnemyController> _onSoftLockTargetChanged;
 		public static event Action _onSoftLockTargetLost;
-		private Enemy oldTarget = null, oldTarget2;
+		private EnemyController oldTarget = null, oldTarget2;
 		
-		public Enemy OldTarget{get => oldTarget; set => oldTarget = value;}
-		public Enemy OldTarget2 => oldTarget2;
+		public EnemyController OldTarget{get => oldTarget; set => oldTarget = value;}
+		public EnemyController OldTarget2 => oldTarget2;
 
 		private SoftLockMode softLockMode = SoftLockMode.LONGRANGE;
 		public SoftLockMode SoftLockMode => softLockMode;
 
-		public bool IsStrongestTarget(Enemy target)
+		public bool IsStrongestTarget(EnemyController target)
 		{
 
 			int strengthCheck = 0;
@@ -74,7 +74,7 @@ namespace Harris.Player.Combat
 			foreach(SensorTarget t in PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed)
 			{
 
-				var enemy = t.transform.parent.GetComponent<Enemy>();
+				var enemy = t.transform.parent.GetComponent<EnemyController>();
 
 				if(enemy == target)
 					continue;
@@ -87,7 +87,7 @@ namespace Harris.Player.Combat
 
 		}
 
-		public bool IsNearestTarget(Enemy target)
+		public bool IsNearestTarget(EnemyController target)
 		{
 			//return GetComponent<Sight>().FindNearestTarget() == target;
 
@@ -100,7 +100,7 @@ namespace Harris.Player.Combat
 			return defaultTargetPriority;
 		}
 
-		private void calculateTargetPriority(Enemy target, bool longRange)
+		private void calculateTargetPriority(EnemyController target, bool longRange)
 		{
 
 			target.setPriority(getDefaultTargetPriority());
@@ -143,7 +143,7 @@ namespace Harris.Player.Combat
 			}
 		}
 
-		private float getHeadAngleToTarget(Enemy target)
+		private float getHeadAngleToTarget(EnemyController target)
 		{
 			var directionToTargetXZ = target.transform.position - PlayerControllerInstance.Instance.HeadTransform.position;
 				directionToTargetXZ.y = 0;
@@ -208,18 +208,18 @@ namespace Harris.Player.Combat
 			//foreach(Enemy target in sensorTargets)
 			foreach(var target in PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed)
 			{
-				var enemy = target.transform.parent.GetComponent<Enemy>();
+				var enemy = target.transform.parent.GetComponent<EnemyController>();
 				calculateTargetPriority(enemy, longRange);
 				Debug.Log("Target " + enemy.transform.gameObject.name + " has priority: " + enemy.TargetPriority);
 			}
 		}
 
-		private Enemy chooseTarget()
+		private EnemyController chooseTarget()
 		{
 			int currentPriority = 0;
 
 			//To store targets with same priority
-			var arr = new List<Enemy>();
+			var arr = new List<EnemyController>();
 
 			if(PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed.Count == 0)
 				return null;
@@ -229,7 +229,7 @@ namespace Harris.Player.Combat
 				currentPriority++;
 				foreach(var target in PlayerControllerInstance.Instance.GetSensor<Sight>().TargetsSensed)
 				{
-					var enemy = target.transform.parent.GetComponent<Enemy>();
+					var enemy = target.transform.parent.GetComponent<EnemyController>();
 					if(enemy.TargetPriority == currentPriority)
 					{
 						arr.Add(enemy);

@@ -6,7 +6,7 @@ namespace Harris.Perception
 	using UnityEngine;
 	using System;
 	using Harris.Util;
-	using Harris.NPC;
+	//using Harris.NPC;
 
 	// BEGIN enemy_visibility
 	#if UNITY_EDITOR
@@ -46,6 +46,12 @@ namespace Harris.Perception
 
 		private float checkVisibilityTimer = 0f;
 		private float checkVisibilityTimerInterval = 0.0f;
+
+		[SerializeField]
+		private LayerMask ignore;
+
+		[SerializeField]
+		private SensorTarget self;
 
 
 		// Check to see if we can see the target every frame.
@@ -129,7 +135,7 @@ namespace Harris.Perception
 			foreach (var hitCollider in hitColliders)
 			{
 				SensorTarget target = hitCollider.transform.GetComponentInChildren<SensorTarget>();
-				if (target != null)
+				if (target != null && target != self)
 					targets.Add(target);
 			}
 		}
@@ -200,16 +206,16 @@ namespace Harris.Perception
 				//Debug.DrawRay(transform.position, dirToClosestEnemyPoint2,Color.green);
 
 				// Compute the horizontal direction to the target
-				var directionToTargetXZ = target.transform.position - transform.position;
-				directionToTargetXZ.y = 0;
+				//var directionToTargetXZ = target.transform.position - transform.position;
+				//directionToTargetXZ.y = 0;
 
 				var forwardXZ = transform.forward;
 				forwardXZ.y = 0;
 
 				// Calculate the number of degrees from the horizontal forward direction.
-				var horDegreesToTarget = 
+				//var horDegreesToTarget = 
 					//Vector3.Angle(transform.forward, directionToTarget);
-					Vector3.Angle(forwardXZ, directionToTargetXZ);
+					//Vector3.Angle(forwardXZ, directionToTargetXZ);
 
 				
 				var horDegreesToClosestTargetPoint1 = Vector3.Angle(forwardXZ, dirToClosestTargetPoint1 );
@@ -265,11 +271,18 @@ namespace Harris.Perception
 				var canSee = false;
 
 				// Fire the raycasts. Did they hit anything?
-				if (Physics.Raycast(ray1, out hit, rayDistance1) || (Physics.Raycast(ray2, out hit, rayDistance2)))
+
+				//Debug.DrawRay(transform.position, dirToClosestTargetPoint1*rayDistance1, Color.red);
+				//Debug.DrawRay(transform.position, dirToClosestTargetPoint2*rayDistance2, Color.red);
+
+				if (Physics.Raycast(ray1, out hit, rayDistance1, ignore) || (Physics.Raycast(ray2, out hit, rayDistance2, ignore)))
 				{
 					// Did the ray hit our target?
 					//if (hit.collider.transform == target || hit.collider.transform.parent == target)
-					if (hit.collider.transform.parent.TryGetComponent<SensorTarget>(out SensorTarget target))
+
+					SensorTarget target = hit.collider.transform.parent.GetComponentInChildren<SensorTarget>();
+					//if (hit.collider.transform.parent.TryGetComponent<SensorTarget>(out SensorTarget target))
+					if(target != null)
 					{
 						// Then we can see it (that is, the ray didn't hit an
 						// obstacle in between us and the target)
@@ -280,6 +293,10 @@ namespace Harris.Perception
 							_targetsSensed.Add(target);
 							_onTargetDetected?.Invoke(target);
 						}
+					}
+					else
+					{
+						Debug.Log("sensortarget is null!");
 					}
 
 					Debug.Log("parent = " + hit.collider.transform.parent);

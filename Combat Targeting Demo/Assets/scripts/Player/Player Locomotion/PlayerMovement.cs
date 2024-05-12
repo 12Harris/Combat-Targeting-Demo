@@ -274,7 +274,7 @@ namespace Harris.Player.PlayerLocomotion
 			idleState.Enter();
         }
 
-        private void handleSoftLockTargetChanged(Enemy oldEnemy, Enemy newEnemy)
+        private void handleSoftLockTargetChanged(EnemyController oldEnemy, EnemyController newEnemy)
         {
             if(TargetChooser.Instance.SoftLockMode == SoftLockMode.SHORTRANGE)
             {
