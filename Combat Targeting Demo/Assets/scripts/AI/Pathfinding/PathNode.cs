@@ -2,23 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Harris.AI
+namespace Harris.AI.PathFinding
 {
     public class PathNode
     {
-        private int x;
+        private float x;
 
-        public int X => x;
-        private int y;
-        public int Y => y;
+        public float X => x;
+        private float y;
+        public float Y => y;
 
-        public int gCost;
-        public int hCost;
-        public int fCost;
+        public float gCost;
+        public float hCost;
+        public float fCost;
 
         public bool isWalkable;
         public PathNode cameFromNode;
-        public PathNode(int x, int y)
+        public PathNode(float x, float y)
         {
             this.x = x;
             this.y = y;

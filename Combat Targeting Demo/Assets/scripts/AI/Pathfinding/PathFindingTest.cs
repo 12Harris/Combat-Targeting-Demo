@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Harris.AI
+namespace Harris.AI.PathFinding
 {
     public class PathFindingTest : MonoBehaviour
     {
@@ -13,20 +13,19 @@ namespace Harris.AI
         void Start()
         {
             pathfinding = new Pathfinding();
-            List<PathNode> path;
         }
 
         // Update is called once per frame
         void Update()
         {
-            path = pathfinding.FindPath(0,0,6,7);
+            path = pathfinding.FindPath(0,0,2,6);
             if(path != null)
             {
                 Debug.Log("Path is valid!");
                 for(int i=0; i < path.Count - 1; i++)
                 {
                     //public static void DrawLine(Vector3 start, Vector3 end, Color color = Color.white, float duration = 0.0f, bool depthTest = true);
-                    Debug.DrawLine(new Vector3(path[i].X,.5f,path[i].Y), new Vector3(path[i+1].X,.5f,path[i+1].Y),Color.red);
+                    Debug.DrawLine(new Vector3(path[i].X,.5f,-path[i].Y), new Vector3(path[i+1].X,.5f,-path[i+1].Y),Color.red);
                 }
             }
         }

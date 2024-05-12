@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace Harris.AI
+namespace Harris.AI.PathFinding
 {
     public class Pathfinding
     {
@@ -68,7 +68,7 @@ namespace Harris.AI
                         continue;
                     }
 
-                    int tentativeGCost = currentNode.gCost + CalculateDistanceCost(currentNode, neighbourNode);
+                    float tentativeGCost = currentNode.gCost + CalculateDistanceCost(currentNode, neighbourNode);
                     if(tentativeGCost < neighbourNode.gCost)
                     {
                         neighbourNode.cameFromNode = currentNode;
@@ -95,7 +95,7 @@ namespace Harris.AI
         {
             List<PathNode> neighbourList = new List<PathNode>();
 
-            if(currentNode.X-1 >= 0)
+            /*if(currentNode.X-1 >= 0)
             {
                 //left
                 neighbourList.Add(GetNode(currentNode.X-1,currentNode.Y));
@@ -121,7 +121,37 @@ namespace Harris.AI
             //down
             if(currentNode.Y - 1 >= 0) neighbourList.Add(GetNode(currentNode.X, currentNode.Y - 1));
             //up
-            if(currentNode.Y + 1 < 10) neighbourList.Add(GetNode(currentNode.X, currentNode.Y + 1));
+            if(currentNode.Y + 1 < 10) neighbourList.Add(GetNode(currentNode.X, currentNode.Y + 1));*/
+
+
+            //COPY
+
+            if(currentNode.X-1 >= 0)
+            {
+                //left
+                neighbourList.Add(GetNode((int)Mathf.Floor(currentNode.X-1), (int)Mathf.Floor(currentNode.Y)));
+                //left down
+                if(currentNode.Y-1 >= 0) neighbourList.Add(GetNode((int)Mathf.Floor(currentNode.X-1),(int)Mathf.Floor(currentNode.Y-1)));
+                //left up
+                if(currentNode.Y+1 < 10) neighbourList.Add(GetNode((int)Mathf.Floor(currentNode.X-1),(int)Mathf.Floor(currentNode.Y+1)));
+
+            }
+
+            if(currentNode.X+1 < 10)
+            {
+                //right
+                neighbourList.Add(GetNode((int)Mathf.Floor(currentNode.X+1),(int)Mathf.Floor(currentNode.Y)));
+                //right down
+                if(currentNode.Y-1 >= 0) neighbourList.Add(GetNode((int)Mathf.Floor(currentNode.X+1),(int)Mathf.Floor(currentNode.Y-1)));
+                //right up
+                if(currentNode.Y+1 < 10) neighbourList.Add(GetNode((int)Mathf.Floor(currentNode.X+1),(int)Mathf.Floor(currentNode.Y+1)));
+
+            }
+
+            //down
+            if(currentNode.Y - 1 >= 0) neighbourList.Add(GetNode((int)Mathf.Floor(currentNode.X), (int)Mathf.Floor(currentNode.Y - 1)));
+            //up
+            if(currentNode.Y + 1 < 10) neighbourList.Add(GetNode((int)Mathf.Floor(currentNode.X), (int)Mathf.Floor(currentNode.Y + 1)));
 
             return neighbourList;
         }
@@ -147,11 +177,16 @@ namespace Harris.AI
             return path;
         }
 
-        private int CalculateDistanceCost(PathNode a, PathNode b)
+        private float CalculateDistanceCost(PathNode a, PathNode b)
         {
-            int xDistance = Mathf.Abs(a.X - b.X);
+            /*int xDistance = Mathf.Abs(a.X - b.X);
             int yDistance = Mathf.Abs(a.Y - b.Y);
-            int remaining = Mathf.Abs(xDistance - yDistance);
+            int remaining = Mathf.Abs(xDistance - yDistance);*/
+
+            float xDistance = Mathf.Abs(a.X - b.X);
+            float yDistance = Mathf.Abs(a.Y - b.Y);
+            float remaining = Mathf.Abs(xDistance - yDistance);
+
             return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
         
         }
@@ -175,9 +210,11 @@ namespace Harris.AI
             {
                 for(int x = 0; x < GameMap.Map.GetLength(1);x++)
                 {
-                    nodeMap[y,x] = new PathNode(x,y);
+                    //nodeMap[y,x] = new PathNode(x,y);
+
+                    nodeMap[y,x] = new PathNode(x+0.5f,y+0.5f);
       
-                    if(GameMap.Map[y,x] == ' ')
+                    if(GameMap.Map[y,x] == 'n' || GameMap.Map[y,x] == ' ')
                     {
                         nodeMap[y,x].isWalkable = false;
                     }
