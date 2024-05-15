@@ -131,8 +131,12 @@ namespace Harris.Player.Combat
 					//if(!PlayerControllerInstance.Instance.ResettingHeadRotation || target != oldTarget)
 
 					if(distanceToTargetXZ > looseTargetDistance && distanceToTargetXZ < senseTargetDistance)
-					{
-						if(!PlayerControllerInstance.Instance.ResettingHeadRotation || target != oldTarget2)
+					{	
+
+						//Resetting head rotation means that eventually the head angle to body will be less than 45 again...
+						//if(!PlayerControllerInstance.Instance.ResettingHeadRotation || target != oldTarget2)
+						//PlayerRotationController
+						if(!PlayerControllerInstance.Instance.PlayerRotationController.ResetRotation || target != oldTarget2)
 						{
 							Debug.Log("oldtarget = " + oldTarget2 + ", target = " + target);
 							target.setPriority(priorities[pCondition]);

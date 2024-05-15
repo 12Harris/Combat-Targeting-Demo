@@ -6,100 +6,32 @@ namespace Harris.Player.PlayerLocomotion
 {
     using Harris.Util;
     using Harris.Player.Combat;
+    using Harris.Player.PlayerLocomotion.Rotation;
     public class EncircleTargetState : PlayerMovementState
     {   
 
-        private bool turning;
-        private List<Vector3> worldAxis;
+        private bool moving;
         public  EncircleTargetState(PlayerMovement playerMovement) :base(playerMovement)
         {
-            AddExitGuard("Turning", () => {return turning;});
-            TargetChooser._onSoftLockTargetLost += handleSoftLockTargetLost;//move to encircletargetstate
-            worldAxis = new List<Vector3>();
-            worldAxis.Add(Vector3.forward);
-            worldAxis.Add(-Vector3.forward);
+            AddExitGuard("Moving", () => {return moving;});
+            TargetChooser._onSoftLockTargetLost += handleSoftLockTargetLost;
+
+        }
+
+        private void handleSoftLockTargetLost()
+        {
+            //moving = true;
         }
 
         public override void Enter()
         {   
             Debug.Log("entered encircle target state");
-
+            moving = false;
             PlayerControllerInstance.Instance.BodyTransform.position += PlayerControllerInstance.Instance.BodyTransform.forward * 0.1f;
             PlayerControllerInstance.Instance.HeadTransform.position += PlayerControllerInstance.Instance.HeadTransform.forward * 0.1f;
-
-            turning = false;
         }   
 
-        private void handleSoftLockTargetLost()//move to encircletargetstate
-        {
-            Debug.Log("encircle target STATE => TARGET LOST!");
-            if(TargetChooser.Instance.SoftLockMode == SoftLockMode.SHORTRANGE)
-            {
-                var invForward = -PlayerControllerInstance.Instance.BodyTransform.forward;
 
-                if(worldAxis.Contains(-Vector3.right))
-                    worldAxis.Remove(-Vector3.right);
-
-                if(worldAxis.Contains(-Vector3.left))
-                    worldAxis.Remove(-Vector3.right);
-
-                if(invForward.x < 0)
-                {
-                    worldAxis.Add(Vector3.left);
-                }
-                else
-                {
-                    worldAxis.Add(Vector3.right);
-                }
-
-                var minAngle = 360f;
-
-                Vector3 chosenAxis = Vector3.zero;
-
-                foreach(Vector3 axis in worldAxis)
-                {
-                    if (Vector3.Angle(invForward, axis) < minAngle)
-                    {
-                        minAngle = Vector3.Angle(invForward, axis);
-                        chosenAxis = axis;
-                        Debug.Log("MinAngle to axis: " + axis + " = " + minAngle);
-                    }
-                }
-
-                /*switch(chosenAxis)
-                {
-                    case Vector3 v when v.Equals(Vector3.up):
-                        PlayerMovementState.PlayerDirection = PlayerDirection.NORTH;
-                        break;
-
-                    case Vector3 v when v.Equals(Vector3.down):
-                        PlayerMovementState.PlayerDirection = PlayerDirection.SOUTH;
-                        break;
-
-                    case Vector3 v when v.Equals(Vector3.left):
-                        PlayerMovementState.PlayerDirection = PlayerDirection.WEST;
-                        break;
-                    
-                    case Vector3 v when v.Equals(Vector3.right):
-                        PlayerMovementState.PlayerDirection = PlayerDirection.EAST;
-                        break;
-                }*/
-
-                Debug.Log("chosen axis = " + chosenAxis);
-
-                var turnAngle = 180 - Vector3.Angle(invForward, chosenAxis);
-
-                //Does the player need to turn left or right?
-                LeftRightTest lrTest = new LeftRightTest(chosenAxis, invForward, Vector3.up);
-
-                if (lrTest.targetIsLeft())
-                    turnAngle *=-1;
-
-                PlayerMovement.TurnState.TurnAngle = turnAngle;
-
-                turning = true;
-            }
-        }
 
         public override void Tick(in float deltaTime)
         {
@@ -133,6 +65,11 @@ namespace Harris.Player.PlayerLocomotion
                 {
                     RB.velocity = -PlayerControllerInstance.Instance.BodyTransform.forward * strafeSpeed;
                 }
+            }
+
+            else if(PlayerControllerInstance.Instance.PlayerRotationController.PlayerCanMove)
+            {
+                moving = true;
             }
         }
     }

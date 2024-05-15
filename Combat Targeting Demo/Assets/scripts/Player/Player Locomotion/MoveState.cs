@@ -7,26 +7,26 @@ namespace Harris.Player.PlayerLocomotion
     using Harris.Util;
     using Harris.NPC;
     using Harris.Player.Combat;
+    using Harris.Player.PlayerLocomotion.Rotation;
 
     public class MoveState:PlayerMovementState
     {
         private bool idle;
-        private bool turning;
         private bool encircleTarget;
-        public bool Turning{get => turning; set => turning = value;}
+
         public MoveState(PlayerMovement playerMovement) :base(playerMovement)
         {
             AddExitGuard("Idle", () => {return idle;});
-            AddExitGuard("Turning", () => {return turning;});
+            AddExitGuard("EncircleTarget", () => {return encircleTarget;});
             TargetChooser._onSoftLockTargetChanged += handleSoftLockTargetChanged;
         }
+
 
         private void handleSoftLockTargetChanged(EnemyController oldTarget, EnemyController newTarget)
         {
             if(TargetChooser.Instance.SoftLockMode == SoftLockMode.SHORTRANGE)
-		    {
-                turning = true;
-                PlayerMovement.TurnState.TurnAngle = PlayerControllerInstance.Instance.getAngleToTarget(newTarget);
+            {
+                encircleTarget = true;
             }
         }
 
@@ -34,7 +34,6 @@ namespace Harris.Player.PlayerLocomotion
         {
             base.Enter();
             idle = false;
-            turning = false;
             encircleTarget = false;
         }
 
@@ -53,15 +52,16 @@ namespace Harris.Player.PlayerLocomotion
                 return;
             }
 
-            //Debug.Log("IDLE = " + idle);
-
             var move3d = new Vector3(Move2d.x,0,Move2d.y);
 
-            //transform the 3d movement vector so the player moves in the direction he is facing
-            move3d = Quaternion.AngleAxis(PlayerControllerInstance.Instance.transform.eulerAngles.y, Vector3.up) * move3d;
+            if(PlayerControllerInstance.Instance.PlayerRotationController.PlayerCanMove)
+            {
+                //transform the 3d movement vector so the player moves in the direction he is facing
+                move3d = Quaternion.AngleAxis(PlayerControllerInstance.Instance.transform.eulerAngles.y, Vector3.up) * move3d;
 
-            //RB.velocity = move3d * groundSpeed;
-            RB.velocity = PlayerControllerInstance.Instance.BodyTransform.forward * groundSpeed;
+                //RB.velocity = move3d * groundSpeed;
+                RB.velocity = PlayerControllerInstance.Instance.BodyTransform.forward * groundSpeed;
+            }
         }
     }
 }
