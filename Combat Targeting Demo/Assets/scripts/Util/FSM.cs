@@ -130,13 +130,17 @@ namespace Harris.Util
 		/// <returns>State index</returns>
 		public int AddState(FSM_State s)
 		{
-			// use first state as default start
-			if(_currentState < 0) { _currentState = 0; }
-
 			_states.Add(new BoundState
 			{
 				state = s
 			});
+			
+			// use first state as default start
+			if(_currentState < 0) { 
+				_currentState = 0;
+				BoundState curState = GetStateAtIndex(_currentState);
+				m_currentState = curState?.state;
+			}
 
 			// 
 			return _states.Count - 1; // index -> "ID"

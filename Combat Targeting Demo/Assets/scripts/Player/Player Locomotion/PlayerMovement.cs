@@ -115,11 +115,12 @@ namespace Harris.Player.PlayerLocomotion
 
             //First calculate rotation angle in turn state => enter
             playerMovementFSM.AddTransition(index1, index2, idleState.GetExitGuard("Moving"));
+            playerMovementFSM.AddTransition(index1, index3, idleState.GetExitGuard("EncircleTarget"));
 
             playerMovementFSM.AddTransition(index2, index1, moveState.GetExitGuard("Idle"));
             playerMovementFSM.AddTransition(index2, index3, moveState.GetExitGuard("EncircleTarget"));//turn state => encircleTarget state
 
-            playerMovementFSM.AddTransition(index3, index2, moveState.GetExitGuard("Moving"));
+            playerMovementFSM.AddTransition(index3, index2, encircleTargetState.GetExitGuard("Moving"));
 
 			idleState.Enter();
         }

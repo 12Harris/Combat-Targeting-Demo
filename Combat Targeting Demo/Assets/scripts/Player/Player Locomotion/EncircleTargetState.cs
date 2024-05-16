@@ -11,10 +11,12 @@ namespace Harris.Player.PlayerLocomotion
     {   
 
         private bool moving;
+        private bool canMove;
         public  EncircleTargetState(PlayerMovement playerMovement) :base(playerMovement)
         {
             AddExitGuard("Moving", () => {return moving;});
             TargetChooser._onSoftLockTargetLost += handleSoftLockTargetLost;
+            PlayerRotationController._onLookingAtTarget += handlePlayerStoppedTurning;
 
         }
 
@@ -23,8 +25,16 @@ namespace Harris.Player.PlayerLocomotion
             //moving = true;
         }
 
+        private void handlePlayerStoppedTurning()
+        {
+            if(TargetChooser.Instance.ChosenTarget == null)
+                canMove = true;
+        }
+
         public override void Enter()
         {   
+            canMove = false;
+            RB.velocity = Vector3.zero;
             Debug.Log("entered encircle target state");
             moving = false;
             PlayerControllerInstance.Instance.BodyTransform.position += PlayerControllerInstance.Instance.BodyTransform.forward * 0.1f;
@@ -38,14 +48,16 @@ namespace Harris.Player.PlayerLocomotion
 
             base.Tick(in deltaTime);
 
+            Debug.Log("PLAYER MFSM: ticking encircle target state");
+
             if(TargetChooser.Instance.ChosenTarget != null)
             {
-                var v = TargetChooser.Instance.ChosenTarget.transform.position;
+                /*var v = TargetChooser.Instance.ChosenTarget.transform.position;
                 v.y = PlayerControllerInstance.Instance.HeadTransform.position.y;
                 PlayerControllerInstance.Instance.HeadTransform.LookAt(v);
 
                 v.y = PlayerControllerInstance.Instance.BodyTransform.position.y;
-                PlayerControllerInstance.Instance.BodyTransform.LookAt(v);
+                PlayerControllerInstance.Instance.BodyTransform.LookAt(v);*/
                 //PlayerControllerInstance.Instance.HeadTransform.LookAt(v);
 
                 if(Move2d.x < 0)
@@ -67,7 +79,7 @@ namespace Harris.Player.PlayerLocomotion
                 }
             }
 
-            else if(PlayerControllerInstance.Instance.PlayerRotationController.PlayerCanMove)
+            else if(canMove)
             {
                 moving = true;
             }

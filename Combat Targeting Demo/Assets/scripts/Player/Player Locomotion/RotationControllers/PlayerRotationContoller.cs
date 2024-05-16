@@ -7,6 +7,7 @@ namespace Harris.Player.PlayerLocomotion.Rotation
     using Harris.Util;
     using Harris.Player.Combat;
     using Harris.NPC;
+    using System;
 
     public class PlayerRotationController:MonoBehaviour
     {   
@@ -37,22 +38,38 @@ namespace Harris.Player.PlayerLocomotion.Rotation
         private bool resetRotation;
         public bool ResetRotation => resetRotation;
 
+        public static event Action _onLeavingIdleState;
+        public static event Action _onLookingAtTarget;
+
         private void handleSoftLockTargetChanged(EnemyController e1, EnemyController e2)
         {
             resetRotation = e1 != null && e2 == null;
         }
 
-        private void Awake()
+        private void Start()
         {
             TargetChooser._onSoftLockTargetChanged += handleSoftLockTargetChanged;
 
             playerHeadRotationFSM = new PlayerHeadRotationFSM(headTransform,lowerBodyTransform,headRotator);
-            playerUpperBodyRotationFSM = new PlayerUpperBodyRotationFSM(headTransform,lowerBodyTransform,headRotator);
-            playerLowerBodyRotationFSM = new PlayerLowerBodyRotationFSM(headTransform,lowerBodyTransform,headRotator);
+            playerUpperBodyRotationFSM = new PlayerUpperBodyRotationFSM(headTransform,lowerBodyTransform,upperBodyRotator);
+            playerLowerBodyRotationFSM = new PlayerLowerBodyRotationFSM(headTransform,lowerBodyTransform,lowerBodyRotator);
 
             playerHeadRotationFSM.Init();
             playerUpperBodyRotationFSM.Init();
             playerLowerBodyRotationFSM.Init();
+
+            playerLowerBodyRotationFSM.IdleState._onLeavingIdleState += handleLeavingIdleState;
+            playerLowerBodyRotationFSM.LookAtTargetState._onLookingAtTarget += handleLookingAtTarget;
+        }
+
+        private void handleLeavingIdleState()
+        {
+            _onLeavingIdleState?.Invoke();
+        }
+
+        private void handleLookingAtTarget()
+        {
+            _onLookingAtTarget?.Invoke();
         }
 
         private void Update()
@@ -61,7 +78,14 @@ namespace Harris.Player.PlayerLocomotion.Rotation
             playerUpperBodyRotationFSM.Tick(Time.deltaTime);
             playerLowerBodyRotationFSM.Tick(Time.deltaTime);
 
-            playerCanMove = playerLowerBodyRotationFSM.CurrentState is IdleState;
+            //playerCanMove = playerLowerBodyRotationFSM.CurrentState is IdleState;
+            //playerCanMove =  playerLowerBodyRotationFSM.IdleState.PlayerCanMove;
+            playerCanMove =  !playerLowerBodyRotationFSM.IsRotating;
+
+            Debug.Log("lower body rotation state = " + (playerLowerBodyRotationFSM as PlayerRotationFSM).CurrentState);
+            Debug.Log("head rotation state = " +  playerHeadRotationFSM.CurrentState);
+
+            //playerCanMove = playerLowerBodyRotationFSM.
         }
 
 

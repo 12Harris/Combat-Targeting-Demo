@@ -7,6 +7,7 @@ namespace Harris.Player.PlayerLocomotion.Rotation
     using Harris.Util;
     using Harris.Player.Combat;
     using Harris.NPC;
+    using System;
 
     public class IdleState:FSM_State
     {   
@@ -17,6 +18,12 @@ namespace Harris.Player.PlayerLocomotion.Rotation
 
         private bool disableTargetChooser;
 
+        private bool playerCanMove;
+
+        public bool PlayerCanMove => playerCanMove;
+        
+        public event Action _onLeavingIdleState;
+
         public IdleState(PlayerRotationFSM _fsm)
         {
             fsm = _fsm;
@@ -24,8 +31,9 @@ namespace Harris.Player.PlayerLocomotion.Rotation
             AddExitGuard("Turning", () => {return turning;});
         }
 
-        private void  handleSoftLockTargetChanged(EnemyController e1, EnemyController e2)
+        private void handleSoftLockTargetChanged(EnemyController e1, EnemyController e2)
         {
+            Debug.Log("Idle state, softlock mode = " + TargetChooser.Instance.SoftLockMode);
             if(fsm is PlayerLowerBodyRotationFSM && TargetChooser.Instance.SoftLockMode == SoftLockMode.LONGRANGE)
                 return;
             
@@ -36,9 +44,11 @@ namespace Harris.Player.PlayerLocomotion.Rotation
 
         public override void Enter()
         {
+            Debug.Log("entering rotation idle state");
             turning = false;
             target = null;
             disableTargetChooser = false;
+            playerCanMove = true;
         }
 
         public override void Tick(in float dt)
@@ -162,6 +172,10 @@ namespace Harris.Player.PlayerLocomotion.Rotation
                 TargetChooser.Instance.OldTarget = null;
                 TargetChooser.Instance.enabled = false;
             }
+
+            playerCanMove = false;
+
+            _onLeavingIdleState?.Invoke();
         }
     }
 
@@ -189,15 +203,25 @@ namespace Harris.Player.PlayerLocomotion.Rotation
 
         private void handleSoftLockTargetChanged(EnemyController e1, EnemyController e2)
         {
-            rotator.Interrupt = true;
+            if(rotator.IsRotating)
+            {
+                rotator.Interrupt = true;
+            }
         }
 
         public override void Enter()
         {
+            Debug.Log("Entering turn state");
             rotator.StartCoroutine(rotator.Rotate(TurnAngle));
+            lookAtTarget = false;
             idle = false;
             turnAgain = false;
             
+        }
+
+        public override void Exit()
+        {
+
         }
 
         //not true if while resetting rotation the player sights a new target
@@ -205,6 +229,7 @@ namespace Harris.Player.PlayerLocomotion.Rotation
         {
             if(TargetChooser.Instance.ChosenTarget != null)
             {
+                Debug.Log("lookAt target = true");
                 lookAtTarget = true;
             }
             else
@@ -217,6 +242,7 @@ namespace Harris.Player.PlayerLocomotion.Rotation
 
         public override void Tick(in float dt)
         {
+            Debug.Log("ticking rotator turn state");
             if(rotator.Interrupt == true)
             {
                 turnAgain = true;
@@ -238,6 +264,7 @@ namespace Harris.Player.PlayerLocomotion.Rotation
         private bool turning;
         private RotateObject rotator;
         private List<Vector3> worldAxis;
+        public event Action _onLookingAtTarget;
 
 
         public  LookAtTargetState (PlayerRotationFSM _fsm)
@@ -247,13 +274,14 @@ namespace Harris.Player.PlayerLocomotion.Rotation
             TargetChooser._onSoftLockTargetLost+= handleSoftLockTargetLost;
             AddExitGuard("Turning", () => {return turning;});
             worldAxis = new List<Vector3>();
-            worldAxis.Add(Vector3.up);
-            worldAxis.Add(Vector3.down);
+            worldAxis.Add(Vector3.forward);
+            worldAxis.Add(-Vector3.forward);
         }
 
         public override void Enter()
         {
             turning = false;
+            _onLookingAtTarget?.Invoke();
         }
 
         private void handleSoftLockTargetLost()
@@ -261,13 +289,14 @@ namespace Harris.Player.PlayerLocomotion.Rotation
 
             if(TargetChooser.Instance.SoftLockMode == SoftLockMode.SHORTRANGE)
             {
-                var invForward = -PlayerControllerInstance.Instance.BodyTransform.forward;
+                //var invForward = -PlayerControllerInstance.Instance.BodyTransform.forward;
+                var invForward = -rotator.transform.forward;
 
-                if(worldAxis.Contains(-Vector3.right))
-                    worldAxis.Remove(-Vector3.right);
+                if(worldAxis.Contains(Vector3.right))
+                    worldAxis.Remove(Vector3.right);
 
-                if(worldAxis.Contains(-Vector3.left))
-                    worldAxis.Remove(-Vector3.right);
+                if(worldAxis.Contains(Vector3.left))
+                    worldAxis.Remove(Vector3.left);
 
                 if(invForward.x < 0)
                 {
@@ -319,11 +348,13 @@ namespace Harris.Player.PlayerLocomotion.Rotation
 
         public override void Tick(in float dt)
         {
-            var v = target.transform.position;
-            v.y = rotator.transform.position.y;
-            rotator.transform.LookAt(v);
+            if(TargetChooser.Instance.ChosenTarget != null)
+            {
+                var v = TargetChooser.Instance.ChosenTarget.transform.position;
+                v.y = rotator.transform.position.y;
+                rotator.transform.LookAt(v);
+            }
         }
-
     }
 
     public abstract class PlayerRotationFSM
@@ -355,6 +386,9 @@ namespace Harris.Player.PlayerLocomotion.Rotation
 
         private FSM fsm;
 
+        private bool isRotating;
+        public bool IsRotating => isRotating;
+
         public void Init()
         {
             fsm = new FSM();
@@ -382,6 +416,7 @@ namespace Harris.Player.PlayerLocomotion.Rotation
         {   
             fsm.Tick(dt);
             currentState = fsm.CurrentState;
+            isRotating = rotator.IsRotating;
         }
 
         public static Vector2 GetKeyboardInput()
