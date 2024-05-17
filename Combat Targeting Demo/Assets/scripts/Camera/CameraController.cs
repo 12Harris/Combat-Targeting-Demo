@@ -137,7 +137,9 @@ namespace Harris.Camera
 
         public override void Enter()
         {
+           Debug.Log("Lerping to new target!");
            lerpFinished = false;
+           camTransform.LookAt(previousTarget.position);
            camTransform.GetComponent<CameraController>().StartCoroutine(lerpToTarget());
         }
 
@@ -159,13 +161,15 @@ namespace Harris.Camera
 
         public override void Tick(in float dt)
         {
-           
+           camTransform.LookAt(lookAtPoint);
         }
     }
 
     public class LookAtTargetState:FSM_State
     {
-
+        
+        private Transform firstTarget;
+        private Transform previousTarget;
         private Transform target;
         private bool targetChanged;
         private Vector3 lookAtPoint = Vector3.zero;
@@ -176,6 +180,8 @@ namespace Harris.Camera
         {
             AddExitGuard("TargetChanged", () => {return targetChanged;});
             target = _target;
+            firstTarget = target;
+            previousTarget = _target;
             fsm = _fsm;
             camTranform = _camTransform;
             TargetChooser._onSoftLockTargetChanged += handleTargetChanged;
@@ -184,11 +190,15 @@ namespace Harris.Camera
 
         private void handleTargetChanged(EnemyController e1, EnemyController e2)
         {
+            previousTarget = target;
+            target = e2.gameObject.transform;
             targetChanged = true;
         }
 
         private void handleTargetLost()
         {
+            previousTarget = target;
+            target = firstTarget;
             targetChanged = true;
         }
 
@@ -196,6 +206,7 @@ namespace Harris.Camera
         {
            targetChanged = false;
            lookAtPoint = target.position;
+           camTranform.LookAt(lookAtPoint);
         }
 
         public override void Tick(in float dt)
@@ -263,7 +274,7 @@ namespace Harris.Camera
             fsm2.AddTransition(index4, index3, lerpToTargetState.GetExitGuard("LerpFinished"));
 
             idleState.Enter();
-            lerpToTargetState.Enter();
+            lookAtTargetState.Enter();
         }
 
         public void Tick(in float dt)
