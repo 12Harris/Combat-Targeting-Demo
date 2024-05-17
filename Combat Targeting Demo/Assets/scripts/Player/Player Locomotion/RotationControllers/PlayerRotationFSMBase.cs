@@ -189,6 +189,8 @@ namespace Harris.Player.PlayerLocomotion.Rotation
         private bool turnAgain;
         private bool lookAtTarget;
         private RotateObject rotator;
+        public event Action _onEnteringTurnState;
+        public event Action _onLeavingTurnState;
 
         public TurnState(PlayerRotationFSM _fsm)
         {
@@ -216,12 +218,13 @@ namespace Harris.Player.PlayerLocomotion.Rotation
             lookAtTarget = false;
             idle = false;
             turnAgain = false;
+            _onEnteringTurnState?.Invoke();
             
         }
 
         public override void Exit()
         {
-
+            _onLeavingTurnState?.Invoke();
         }
 
         //not true if while resetting rotation the player sights a new target

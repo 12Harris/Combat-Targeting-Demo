@@ -23,11 +23,18 @@ namespace Harris.Player.PlayerLocomotion
             TargetChooser._onSoftLockTargetChanged += handleSoftLockTargetChanged;
             PlayerRotationController._onLeavingIdleState += handleRotatorLeavingIdleState;
             PlayerRotationController._onLookingAtTarget += handlePlayerLookingAtTarget;
+            PlayerRotationController._onLeavingTurnState += handleRotatorLeavingTurnState;
+        }
+
+        private void handleRotatorLeavingTurnState()
+        {
+            canMove = true;
         }
 
         private void handleRotatorLeavingIdleState()
         {
-
+            Debug.Log("canmove = false " + ", framecount = " + Time.frameCount);
+            canMove = false;
         }
 
         private void handlePlayerLookingAtTarget()

@@ -22,7 +22,7 @@ namespace Harris.Player.Combat
 	using System;
 
 	[AddComponentMenu("Combat/ChooseTarget")]
-	internal class TargetChooser : MonoBehaviour
+	public class TargetChooser : MonoBehaviour
 	{
 		private IDictionary<PriorityCondition, int > priorities = new Dictionary<PriorityCondition, int>();
 

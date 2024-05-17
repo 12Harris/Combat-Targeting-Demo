@@ -40,6 +40,11 @@ namespace Harris.Player.PlayerLocomotion.Rotation
 
         public static event Action _onLeavingIdleState;
         public static event Action _onLookingAtTarget;
+        public static event Action _onEnteringTurnState;
+        public static event Action _onLeavingTurnState;
+
+        private bool lowerBodyRotating;
+        public bool LowerBodyRotating=>lowerBodyRotating;
 
         private void handleSoftLockTargetChanged(EnemyController e1, EnemyController e2)
         {
@@ -60,6 +65,13 @@ namespace Harris.Player.PlayerLocomotion.Rotation
 
             playerLowerBodyRotationFSM.IdleState._onLeavingIdleState += handleLeavingIdleState;
             playerLowerBodyRotationFSM.LookAtTargetState._onLookingAtTarget += handleLookingAtTarget;
+            playerLowerBodyRotationFSM.TurnState._onEnteringTurnState += handleEnteringTurnState;
+            playerLowerBodyRotationFSM.TurnState._onLeavingTurnState += handleLeavingTurnState;
+        }
+
+        private void handleEnteringTurnState()
+        {
+            _onEnteringTurnState?.Invoke();
         }
 
         private void handleLeavingIdleState()
@@ -70,6 +82,11 @@ namespace Harris.Player.PlayerLocomotion.Rotation
         private void handleLookingAtTarget()
         {
             _onLookingAtTarget?.Invoke();
+        }
+
+        private void handleLeavingTurnState()
+        {
+            _onLeavingTurnState?.Invoke();
         }
 
         private void Update()
@@ -84,6 +101,8 @@ namespace Harris.Player.PlayerLocomotion.Rotation
 
             Debug.Log("lower body rotation state = " + (playerLowerBodyRotationFSM as PlayerRotationFSM).CurrentState);
             Debug.Log("head rotation state = " +  playerHeadRotationFSM.CurrentState);
+
+            lowerBodyRotating = playerLowerBodyRotationFSM.IsRotating;
 
             //playerCanMove = playerLowerBodyRotationFSM.
         }

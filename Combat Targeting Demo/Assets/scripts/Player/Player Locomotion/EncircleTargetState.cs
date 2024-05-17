@@ -15,21 +15,15 @@ namespace Harris.Player.PlayerLocomotion
         public  EncircleTargetState(PlayerMovement playerMovement) :base(playerMovement)
         {
             AddExitGuard("Moving", () => {return moving;});
-            TargetChooser._onSoftLockTargetLost += handleSoftLockTargetLost;
-            PlayerRotationController._onLookingAtTarget += handlePlayerStoppedTurning;
+            PlayerRotationController._onLeavingTurnState += handleRotatorLeavingTurnState;
 
         }
 
-        private void handleSoftLockTargetLost()
+        private void handleRotatorLeavingTurnState()
         {
-            //moving = true;
+            canMove = true;
         }
 
-        private void handlePlayerStoppedTurning()
-        {
-            if(TargetChooser.Instance.ChosenTarget == null)
-                canMove = true;
-        }
 
         public override void Enter()
         {   
@@ -37,8 +31,10 @@ namespace Harris.Player.PlayerLocomotion
             RB.velocity = Vector3.zero;
             Debug.Log("entered encircle target state");
             moving = false;
-            PlayerControllerInstance.Instance.BodyTransform.position += PlayerControllerInstance.Instance.BodyTransform.forward * 0.1f;
-            PlayerControllerInstance.Instance.HeadTransform.position += PlayerControllerInstance.Instance.HeadTransform.forward * 0.1f;
+            //PlayerControllerInstance.Instance.BodyTransform.position += PlayerControllerInstance.Instance.BodyTransform.forward * 0.1f;
+            //PlayerControllerInstance.Instance.HeadTransform.position += PlayerControllerInstance.Instance.HeadTransform.forward * 0.1f;
+            PlayerControllerInstance.Instance.transform.position += PlayerControllerInstance.Instance.BodyTransform.forward * 0.1f;
+           
         }   
 
 

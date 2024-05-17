@@ -21,11 +21,18 @@ namespace Harris.Player.PlayerLocomotion
             AddExitGuard("Moving", () => {return moving;});
             AddExitGuard("EncircleTarget", () => {return encircleTarget;});
             PlayerRotationController._onLeavingIdleState += handleRotatorLeavingIdleState;
+            PlayerRotationController._onLeavingTurnState += handleRotatorLeavingTurnState;
             PlayerRotationController._onLookingAtTarget += handlePlayerLookingAtTarget;
+        }
+
+        private void handleRotatorLeavingTurnState()
+        {
+            canMove = true;
         }
 
         private void handleRotatorLeavingIdleState()
         {
+            Debug.Log("canmove = false " + ", framecount = " + Time.frameCount);
             canMove = false;
         }
 
@@ -48,17 +55,11 @@ namespace Harris.Player.PlayerLocomotion
             Debug.Log("Entering idle state!");
         }
 
-        public override void Tick(in float deltaTime)
+        public override void LateTick(in float deltaTime)
         {
-            
-            Debug.Log("Ticking player idle state");
-
-            RB.velocity = Vector3.zero;
-
-            base.Tick(in deltaTime);
-
             if(Move2d.magnitude > 0f && canMove)
             {
+                Debug.Log("canmove = true " + ", framecount = " + Time.frameCount);
                 moving = true;
             }
         }
