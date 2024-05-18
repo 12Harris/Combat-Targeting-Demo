@@ -19,7 +19,7 @@ namespace Harris.NPC.EnemyLocomotion
         public ChaseState(EnemyMovement enemyMovement) :base(enemyMovement)
         {
             AddExitGuard("TargetLost", () => {return targetLost;});
-            EnemyControllerInstance.Instance.GetSensor<Sight>()._onTargetLost += handleTargetLost;
+            EnemyMovement.transform.GetComponent<EnemyController>().GetSensor<Sight>()._onTargetLost += handleTargetLost;
         }
 
         private void handleTargetLost(SensorTarget target)
@@ -47,12 +47,12 @@ namespace Harris.NPC.EnemyLocomotion
 
             Debug.Log("Ticking enemy chase state");
 
-            var v = EnemyControllerInstance.Instance.GetSensor<Sight>().TargetsSensed[0].transform.position;
-            v.y = EnemyControllerInstance.Instance.transform.position.y;
+            var v = EnemyMovement.transform.GetComponent<EnemyController>().GetSensor<Sight>().TargetsSensed[0].transform.position;
+            v.y = EnemyMovement.transform.position.y;
 
-            EnemyControllerInstance.Instance.transform.LookAt(v);
+            EnemyMovement.transform.LookAt(v);
 
-            RB.velocity = EnemyControllerInstance.Instance.transform.forward * groundSpeed;
+            RB.velocity = EnemyMovement.transform.forward * groundSpeed;
 
 
         }

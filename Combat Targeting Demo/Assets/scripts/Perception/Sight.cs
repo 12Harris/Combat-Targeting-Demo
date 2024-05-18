@@ -71,7 +71,7 @@ namespace Harris.Perception
 				// we can't
 				var color = targetIsVisible ? Color.yellow : Color.white;
 
-				GetComponent<Renderer>().material.color = color;
+				//GetComponent<Renderer>().material.color = color;
 			}
 
 		}

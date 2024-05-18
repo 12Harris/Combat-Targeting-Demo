@@ -18,8 +18,8 @@ namespace Harris.NPC.EnemyLocomotion
         {
             AddExitGuard("Idle", () => {return idle;});
             AddExitGuard("Target Detected", () => {return targetDetected;});
-            EnemyControllerInstance.Instance.GetSensor<Sight>()._onTargetDetected += handleTargetDetected;
-            EnemyControllerInstance.Instance.GetSensor<Sight>()._onTargetLost += handleTargetLost;
+            EnemyMovement.transform.GetComponent<EnemyController>().GetSensor<Sight>()._onTargetDetected += handleTargetDetected;
+            EnemyMovement.transform.GetComponent<EnemyController>().GetSensor<Sight>()._onTargetLost += handleTargetLost;
         }
 
         private void handleTargetDetected(SensorTarget target)
@@ -37,19 +37,19 @@ namespace Harris.NPC.EnemyLocomotion
             base.Enter();
             idle = false;
             v = EnemyMovement.NextWaypoint.transform.position;
-            v.y = EnemyControllerInstance.Instance.transform.position.y;
+            v.y = EnemyMovement.transform.GetComponent<EnemyController>().transform.position.y;
         }
 
         public override void Exit()
         {
             if(targetDetected)
             {
-                var targetXZPos = EnemyControllerInstance.Instance.GetSensor<Sight>().TargetsSensed[0].transform.position;
-                targetXZPos.y = EnemyControllerInstance.Instance.transform.position.y;
+                var targetXZPos = EnemyMovement.transform.GetComponent<EnemyController>().GetSensor<Sight>().TargetsSensed[0].transform.position;
+                targetXZPos.y = EnemyMovement.transform.GetComponent<EnemyController>().transform.position.y;
 
-                var turnAngle = Vector3.Angle(EnemyControllerInstance.Instance.transform.forward, targetXZPos - EnemyControllerInstance.Instance.transform.position);
+                var turnAngle = Vector3.Angle(EnemyMovement.transform.forward, targetXZPos - EnemyMovement.transform.position);
 
-                LeftRightTest lrTest = new LeftRightTest(EnemyControllerInstance.Instance.transform.forward, targetXZPos-EnemyControllerInstance.Instance.transform.position, Vector3.up);
+                LeftRightTest lrTest = new LeftRightTest(EnemyMovement.transform.forward, targetXZPos-EnemyMovement.transform.position, Vector3.up);
 
                 if (lrTest.targetIsLeft())
                     turnAngle *=-1;
@@ -69,14 +69,17 @@ namespace Harris.NPC.EnemyLocomotion
 
             //RB.velocity = move3d * groundSpeed;
 
-            if(Vector3.Distance(EnemyControllerInstance.Instance.transform.position,v) < 0.05f)
+            Debug.Log("dist to wp = " + Vector3.Distance(EnemyMovement.transform.position,v));
+
+            if(Vector3.Distance(EnemyMovement.transform.position,v) < 0.1f)
             {
                 idle = true;
                 RB.velocity = Vector3.zero;
+                Debug.Log("enemy idle = true");
                 return;
 
             }
-            RB.velocity = EnemyControllerInstance.Instance.transform.forward * groundSpeed;
+            RB.velocity = EnemyMovement.transform.forward * groundSpeed;
         }
     }
 }

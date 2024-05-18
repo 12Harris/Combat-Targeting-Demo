@@ -14,7 +14,12 @@ namespace Harris.Camera
         private CameraFSM fsm;
         [SerializeField]
         private Transform target;
+        public static CameraController Instance;
 
+        private void Awake()
+        {
+            Instance = this;
+        }
         void Start()
         {
             fsm = new CameraFSM(target, transform);

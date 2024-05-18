@@ -52,7 +52,7 @@ namespace Harris.Player
 
 		private void Start()
 		{
-
+			Application.targetFrameRate = 60;
 		}
 
 

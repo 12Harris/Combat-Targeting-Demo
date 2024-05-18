@@ -21,8 +21,8 @@ namespace Harris.NPC.EnemyLocomotion
         public IdleState(EnemyMovement enemyMovement) :base(enemyMovement)
         {
             AddExitGuard("Turning", () => {return turning;});
-            EnemyControllerInstance.Instance.GetSensor<Sight>()._onTargetDetected += handleTargetDetected;
-            EnemyControllerInstance.Instance.GetSensor<Sight>()._onTargetLost += handleTargetLost;
+            EnemyMovement.transform.GetComponent<EnemyController>().GetSensor<Sight>()._onTargetDetected += handleTargetDetected;
+            EnemyMovement.transform.GetComponent<EnemyController>().GetSensor<Sight>()._onTargetLost += handleTargetLost;
 
         }
 
@@ -55,12 +55,12 @@ namespace Harris.NPC.EnemyLocomotion
             if(targetDetected)
             {
 
-                var targetXZPos = EnemyControllerInstance.Instance.GetSensor<Sight>().TargetsSensed[0].transform.position;
-                targetXZPos.y = EnemyControllerInstance.Instance.transform.position.y;
+                var targetXZPos =  EnemyMovement.transform.GetComponent<EnemyController>().GetSensor<Sight>().TargetsSensed[0].transform.position;
+                targetXZPos.y = EnemyMovement.transform.position.y;
 
-                turnAngle = Vector3.Angle(EnemyControllerInstance.Instance.transform.forward, targetXZPos - EnemyControllerInstance.Instance.transform.position);
+                turnAngle = Vector3.Angle(EnemyMovement.transform.forward, targetXZPos -EnemyMovement.transform.position);
 
-                LeftRightTest lrTest = new LeftRightTest(EnemyControllerInstance.Instance.transform.forward, targetXZPos-EnemyControllerInstance.Instance.transform.position, Vector3.up);
+                LeftRightTest lrTest = new LeftRightTest(EnemyMovement.transform.forward, targetXZPos-EnemyMovement.transform.position, Vector3.up);
 
                 if (lrTest.targetIsLeft())
                     turnAngle *=-1;
@@ -69,17 +69,19 @@ namespace Harris.NPC.EnemyLocomotion
             else
             {
                 var v = EnemyMovement.NextWaypoint.transform.position;
-                v.y = EnemyControllerInstance.Instance.transform.position.y;
+                v.y = EnemyMovement.transform.position.y;
 
-                turnAngle = Vector3.Angle(EnemyControllerInstance.Instance.transform.forward, v-EnemyControllerInstance.Instance.transform.position);
+                turnAngle = Vector3.Angle(EnemyMovement.transform.forward, v-EnemyMovement.transform.position);
 
                 //Does the head need to turn left or right?
-                LeftRightTest lrTest = new LeftRightTest(EnemyControllerInstance.Instance.transform.forward, v-EnemyControllerInstance.Instance.transform.position, Vector3.up);
+                LeftRightTest lrTest = new LeftRightTest(EnemyMovement.transform.forward, v-EnemyMovement.transform.position, Vector3.up);
 
                 if (lrTest.targetIsLeft())
                     turnAngle *=-1;
             
             }
+
+            Debug.Log("enemy turn angle = " + turnAngle);
             EnemyMovement.TurnState.TurnAngle = turnAngle;
         }
 

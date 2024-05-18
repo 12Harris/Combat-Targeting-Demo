@@ -208,6 +208,7 @@ namespace Harris.Player.PlayerLocomotion.Rotation
             if(rotator.IsRotating)
             {
                 rotator.Interrupt = true;
+                turnAngle = fsm.getAngleToTarget(e2);
             }
         }
 
@@ -251,6 +252,13 @@ namespace Harris.Player.PlayerLocomotion.Rotation
                 turnAgain = true;
                 return;
             }
+            else
+            {
+                if(TargetChooser.Instance.ChosenTarget != null)
+                {
+                    rotator.SetRotationAngle(fsm.getAngleToTarget(TargetChooser.Instance.ChosenTarget));
+                }
+            }
         }
 
     }
@@ -287,6 +295,7 @@ namespace Harris.Player.PlayerLocomotion.Rotation
             _onLookingAtTarget?.Invoke();
         }
 
+        //code works well for both player input and non player input
         private void handleSoftLockTargetLost()
         {
 

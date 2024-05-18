@@ -18,6 +18,8 @@ namespace Harris.Util
         public event Action _onStopRotation;
         private bool interrupt = false;
         public bool Interrupt{get => interrupt; set => interrupt = value;}
+        private Quaternion targetRotation;
+        private float angle = 0;
 
         void Update()
         {
@@ -27,19 +29,27 @@ namespace Harris.Util
             }*/
         }
 
-        public IEnumerator Rotate(float angle, float lerpDuration = 0.5f)
+        public void SetRotationAngle(float _angle)
+        {
+            angle = _angle;
+        }
+
+        public IEnumerator Rotate(float _angle, float lerpDuration = 0.5f)
         {
             rotating = true;
             interrupt = false;
 
             float timeElapsed = 0;
             Quaternion startRotation = transform.rotation;
-            Quaternion targetRotation = transform.rotation * Quaternion.Euler(0, angle, 0);
+            targetRotation = transform.rotation * Quaternion.Euler(0, _angle, 0);
             
             _onStartRotation?.Invoke();
+            angle = _angle;
 
             while (timeElapsed < lerpDuration && interrupt == false)
             {
+                targetRotation = startRotation * Quaternion.Euler(0, angle, 0);//newly added
+
                 transform.rotation = Quaternion.Slerp(startRotation, targetRotation, timeElapsed / lerpDuration);
                 timeElapsed += Time.deltaTime;
 

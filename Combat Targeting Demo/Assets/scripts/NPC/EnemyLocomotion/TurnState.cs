@@ -23,11 +23,11 @@ namespace Harris.NPC.EnemyLocomotion
             AddExitGuard("Patroling", () => {return patroling;});
             AddExitGuard("Chasing", () => {return chasing;});
 
-            if(EnemyControllerInstance.Instance.Rotator == null)
+            if(EnemyMovement.transform.GetComponent<EnemyController>().Rotator == null)
                 Debug.Log("enemy controller rotator is null");
-            EnemyControllerInstance.Instance.Rotator._onStopRotation += handleTurnCompleted;
-            EnemyControllerInstance.Instance.GetSensor<Sight>()._onTargetDetected += handleTargetDetected;
-            EnemyControllerInstance.Instance.GetSensor<Sight>()._onTargetLost += handleTargetLost;
+            EnemyMovement.transform.GetComponent<EnemyController>().Rotator._onStopRotation += handleTurnCompleted;
+            EnemyMovement.transform.GetComponent<EnemyController>().GetSensor<Sight>()._onTargetDetected += handleTargetDetected;
+            EnemyMovement.transform.GetComponent<EnemyController>().GetSensor<Sight>()._onTargetLost += handleTargetLost;
         }
 
         private void handleTargetDetected(SensorTarget target)
@@ -42,6 +42,7 @@ namespace Harris.NPC.EnemyLocomotion
 
         private void handleTurnCompleted()
         {
+            Debug.Log("enemy turn completed");
             if(targetDetected)
                 chasing = true;
             else
@@ -50,7 +51,8 @@ namespace Harris.NPC.EnemyLocomotion
 
         public override void Enter()
         {   
-            Debug.Log("Entering enemy turn state!");
+            Debug.Log("Entering enemy turn state with turn angle: " + TurnAngle);
+
             base.Enter();
 
             //Decactivate the sight temporarily so we dont get distracted by nearby enemies
@@ -58,7 +60,7 @@ namespace Harris.NPC.EnemyLocomotion
             RB.velocity = Vector3.zero;
  
             //rotate the player
-            EnemyControllerInstance.Instance.Rotator.StartCoroutine(EnemyControllerInstance.Instance.Rotator.Rotate(TurnAngle,0.5f));
+            EnemyMovement.transform.GetComponent<EnemyController>().Rotator.StartCoroutine(EnemyMovement.transform.GetComponent<EnemyController>().Rotator.Rotate(TurnAngle,0.5f));
       
         }
 

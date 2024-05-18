@@ -99,7 +99,10 @@ namespace Harris.AI.PathFinding
 					Debug.Log("other waypoint detected!");
 					//If there is an obstacle between the 2 waypoints then dont connect them and continue
 					if(Physics.Raycast(transform.position,wp.transform.position-transform.position,(wp.transform.position-transform.position).magnitude,ignoreEntity))
+					{
+						Debug.Log("waypoint => continue");
 						continue;
+					}
 
 					//should this waypoint be ignored?
 					if(ignoreWaypoints.Contains(wp))

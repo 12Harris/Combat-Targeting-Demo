@@ -30,6 +30,9 @@ namespace Harris.NPC
         [SerializeField]
         private Image highLight;
 
+		[SerializeField]
+		private Transform highLightTransform;
+
         public Image HighLight => highLight;
 
 		private void Awake()
@@ -53,7 +56,7 @@ namespace Harris.NPC
 		
 		private void Update()
 		{
-
+			highLightTransform.LookAt(transform.position - Vector3.forward);
 		}
 
 		public void setPriority(int priority)

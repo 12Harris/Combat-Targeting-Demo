@@ -35,8 +35,8 @@ namespace Harris.NPC.EnemyLocomotion
         public EnemyMovementState(EnemyMovement _enemyMovement)
         {
             //rb = PlayerControllerInstance.Instance.transform.GetComponentInChildren<Rigidbody>();
-            rb = EnemyControllerInstance.Instance.transform.GetComponent<Rigidbody>();
             enemyMovement = _enemyMovement;
+            rb = EnemyMovement.transform.GetComponent<Rigidbody>();
         }
 
 
